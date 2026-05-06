@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: vidrush
+    env: docker
+    plan: starter
+    autoDeploy: false
+    healthCheckPath: /api/health
+    disk:
+      name: vidrush-videos
+      mountPath: /app/videos
+      sizeGB: 10
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: VIDEO_DIR
+        value: /app/videos
+      - key: IMAGE_SOURCE_MODE
+        value: ai
+      - key: IMAGEN_MODEL
+        value: imagen-4.0-ultra-generate-001
+      - key: IMAGEN_IMAGE_SIZE
+        value: 2K
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: HF_TOKEN
+        sync: false
+      - key: REPLICATE_API_TOKEN
+        sync: false
+      - key: TOGETHER_API_KEY
+        sync: false
+      - key: PEXELS_API_KEY
+        sync: false

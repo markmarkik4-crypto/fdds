@@ -1,0 +1,3308 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VidRush — AI Video Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@600;700;800;900&family=Bebas+Neue&family=Oswald:wght@500;600;700&family=Poppins:wght@400;600;700;800&family=Playfair+Display:wght@700;900&family=Anton&family=Alfa+Slab+One&family=Permanent+Marker&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #08080f;
+      --surface: #111118;
+      --surface2: #1a1a24;
+      --border: #22222f;
+      --text: #f0f0ff;
+      --text2: #8888aa;
+      --accent: #7c3aed;
+      --accent2: #a855f7;
+      --accent3: #c084fc;
+      --green: #22c55e;
+      --red: #ef4444;
+      --yellow: #eab308;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Page header ── */
+    .page-header {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    .page-header-title {
+      font-size: 22px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #fff, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .page-header-sub {
+      font-size: 14px;
+      color: var(--text2);
+      font-weight: 500;
+    }
+
+    /* ── App ── */
+    .app {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 32px 20px 80px;
+    }
+
+    /* ── Section ── */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 32px;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    /* Step 6 — wider so caption tools fit nicely */
+    .section.wide {
+      width: 100%;
+    }
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text2);
+      margin-bottom: 20px;
+    }
+
+    /* ── Step Header ── */
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+    .step-num {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 800;
+      color: #fff; flex-shrink: 0;
+    }
+    .step-info { flex: 1; }
+    .step-title {
+      font-size: 16px; font-weight: 700;
+      color: var(--text); line-height: 1.2;
+    }
+    .step-desc {
+      font-size: 12px; color: var(--text2);
+      margin-top: 2px;
+    }
+
+    /* ── Inline Caption Settings ── */
+    .caption-inline {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.25s;
+    }
+    .caption-inline-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .caption-inline-header:hover { background: rgba(255,255,255,0.03); }
+    .caption-inline-left {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .caption-on-badge {
+      font-size: 11px; font-weight: 700;
+      padding: 3px 10px; border-radius: 20px;
+      background: rgba(34,197,94,0.15);
+      color: var(--green); border: 1px solid rgba(34,197,94,0.3);
+    }
+    .caption-on-badge.off {
+      background: rgba(255,255,255,0.05);
+      color: var(--text2); border-color: var(--border);
+    }
+    .caption-inline-title {
+      font-size: 14px; font-weight: 600; color: var(--text);
+    }
+    .caption-inline-chevron {
+      color: var(--text2); font-size: 12px;
+      transition: transform 0.25s;
+    }
+    .caption-inline.open .caption-inline-chevron { transform: rotate(180deg); }
+    .caption-inline-body {
+      display: none;
+      padding: 0 20px 20px;
+    }
+    .caption-inline.open .caption-inline-body { display: block; }
+    .cap-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .cap-field label {
+      display: block;
+      font-size: 11px; font-weight: 600;
+      color: var(--text2); margin-bottom: 6px;
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .cap-field input[type="number"],
+    .cap-field select {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 14px;
+      padding: 8px 12px;
+      outline: none;
+      font-family: inherit;
+    }
+    .cap-field input[type="number"]:focus,
+    .cap-field select:focus { border-color: var(--accent); }
+    .cap-color-row {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .cap-swatch {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      border: 2px solid var(--border);
+      overflow: hidden; position: relative; flex-shrink: 0;
+      cursor: pointer;
+    }
+    .cap-swatch input[type="color"] {
+      position: absolute; inset: -4px;
+      width: calc(100% + 8px); height: calc(100% + 8px);
+      border: none; padding: 0; cursor: pointer; opacity: 0;
+    }
+    .cap-hex {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text);
+      font-size: 13px; padding: 7px 10px;
+      width: 100%; outline: none; font-family: inherit;
+    }
+    .cap-hex:focus { border-color: var(--accent); }
+    .cap-toggle-row {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 16px; padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .cap-toggle {
+      width: 44px; height: 24px;
+      background: var(--surface); border-radius: 12px;
+      position: relative; cursor: pointer;
+      border: 1px solid var(--border); outline: none;
+      transition: background 0.2s;
+    }
+    .cap-toggle.on { background: var(--accent); border-color: var(--accent); }
+    .cap-toggle::after {
+      content: '';
+      position: absolute; top: 3px; left: 3px;
+      width: 16px; height: 16px;
+      border-radius: 50%; background: #fff;
+      transition: transform 0.2s;
+    }
+    .cap-toggle.on::after { transform: translateX(20px); }
+    .cap-toggle-label { font-size: 14px; font-weight: 600; color: var(--text); }
+
+    /* ── Phone Preview ── */
+    .cap-body-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 220px;
+      gap: 24px;
+      align-items: start;
+    }
+    @media (max-width: 700px) {
+      .cap-body-layout { grid-template-columns: 1fr; }
+    }
+
+    .phone-preview-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      position: sticky;
+      top: 20px;
+    }
+    .phone-label {
+      font-size: 12px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--text2);
+      margin-bottom: 4px;
+    }
+
+    /* Phone frame */
+    .phone-frame {
+      width: 200px;
+      height: 400px;
+      background: #111;
+      border-radius: 28px;
+      border: 2px solid #444;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+    .phone-notch {
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 70px; height: 18px;
+      background: #111;
+      border-radius: 0 0 14px 14px;
+      z-index: 10;
+    }
+    .phone-notch::before {
+      content: '';
+      position: absolute;
+      top: 5px; left: 50%;
+      transform: translateX(-50%);
+      width: 34px; height: 5px;
+      background: #1a1a1a;
+      border-radius: 5px;
+    }
+    .phone-status-bar {
+      position: absolute;
+      top: 18px; left: 0; right: 0;
+      height: 18px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 12px;
+      font-size: 8px; color: rgba(255,255,255,0.5);
+      z-index: 10;
+    }
+    .phone-screen {
+      position: absolute;
+      top: 18px; left: 0; right: 0; bottom: 0;
+      overflow: hidden;
+    }
+    .phone-bg {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Caption preview text inside phone */
+    .phone-caption-zone {
+      position: absolute;
+      left: 0; right: 0;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 0 8px;
+      pointer-events: none;
+      transition: top 0.3s, bottom 0.3s;
+    }
+    .phone-caption-zone.top { top: 14px; bottom: auto; }
+    .phone-caption-zone.middle { top: 50%; bottom: auto; transform: translateY(-50%); }
+    .phone-caption-zone.bottom { top: auto; bottom: 18px; }
+
+    .phone-caption-text {
+      display: inline-block;
+      text-align: center;
+      word-break: break-word;
+      line-height: 1.3;
+      transition: color 0.15s, background 0.15s, font-size 0.15s;
+      padding: 3px 5px;
+      border-radius: 3px;
+      max-width: 100%;
+    }
+    .phone-caption-text.disabled { display: none; }
+
+    .phone-caption-line {
+      display: block;
+    }
+
+    /* ── Cap Templates ── */
+    .cap-templates {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .cap-tpl-btn {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 6px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .cap-tpl-btn:hover { border-color: var(--accent); background: rgba(124,58,237,0.08); }
+    .cap-tpl-btn.active { border-color: var(--accent); background: rgba(124,58,237,0.15); }
+    .cap-tpl-icon { font-size: 18px; display: block; margin-bottom: 3px; }
+    .cap-tpl-name { font-size: 10px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; }
+    .cap-tpl-btn.active .cap-tpl-name { color: var(--accent3); }
+
+    /* ── Cap Font selector ── */
+    .cap-font-row {
+      margin-bottom: 14px;
+    }
+    .cap-font-row label {
+      display: block; font-size: 11px; font-weight: 600;
+      color: var(--text2); margin-bottom: 6px;
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .cap-font-scroll {
+      display: flex; gap: 8px; overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+    .cap-font-scroll::-webkit-scrollbar { display: none; }
+    .cap-font-btn {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+    .cap-font-btn:hover { border-color: var(--accent); }
+    .cap-font-btn.active { border-color: var(--accent); background: rgba(124,58,237,0.15); color: var(--accent3); }
+
+    /* ── Theme Grid ── */
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 10px;
+    }
+    .theme-btn {
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 10px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .theme-btn:hover {
+      border-color: var(--accent);
+      background: rgba(124,58,237,0.1);
+      transform: translateY(-2px);
+    }
+    .theme-btn.active {
+      border-color: var(--accent);
+      background: rgba(124,58,237,0.2);
+      color: var(--accent3);
+      box-shadow: 0 0 20px rgba(124,58,237,0.25);
+    }
+    .theme-btn .emoji { font-size: 22px; display: block; margin-bottom: 6px; }
+
+    /* ── Custom Text ── */
+    .custom-wrap {
+      margin-top: 16px;
+      display: none;
+    }
+    .custom-wrap.show { display: block; }
+    .custom-textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 15px;
+      resize: vertical;
+      min-height: 80px;
+      transition: border-color 0.2s;
+    }
+    .custom-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .custom-textarea::placeholder { color: var(--text2); }
+
+    /* ── Options Row ── */
+    .options-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 600px) {
+      .options-row { grid-template-columns: 1fr; }
+    }
+    .option-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text2);
+      margin-bottom: 10px;
+    }
+    .option-group select {
+      width: 100%;
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238888aa' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      transition: border-color 0.2s;
+    }
+    .option-group select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    /* ── Style Grid ── */
+    .style-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 12px;
+    }
+    .style-btn {
+      border-radius: 16px;
+      padding: 0;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      font-family: inherit;
+      overflow: hidden;
+      border: 2px solid transparent;
+      min-height: 110px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 12px 10px;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+      position: relative;
+      background-size: cover;
+      background-position: center;
+    }
+    .style-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.7) 100%);
+      z-index: 0;
+    }
+    .style-btn .style-icon {
+      font-size: 28px;
+      margin-bottom: 4px;
+      position: relative;
+      z-index: 1;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+    }
+    .style-btn .style-name {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      position: relative;
+      z-index: 1;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.7);
+      line-height: 1.2;
+    }
+    .style-btn .style-desc {
+      display: block;
+      font-size: 10px;
+      font-weight: 400;
+      opacity: 0.75;
+      position: relative;
+      z-index: 1;
+      margin-top: 2px;
+    }
+    .style-btn:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .style-btn.active {
+      border-color: #fff;
+      box-shadow: 0 0 0 2px rgba(255,255,255,0.3), 0 8px 24px rgba(0,0,0,0.5);
+      transform: translateY(-3px) scale(1.03);
+    }
+
+    /* ── Music ── */
+    .music-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 8px;
+    }
+    .music-btn {
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      transition: all 0.2s;
+      font-family: inherit;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .music-btn:hover { border-color: var(--accent); }
+    .music-btn.active {
+      border-color: var(--accent);
+      background: rgba(124,58,237,0.15);
+    }
+    .music-btn .music-play {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 11px;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .music-btn .music-play:hover {
+      background: var(--accent2);
+      transform: scale(1.1);
+    }
+    .music-btn .music-play.playing {
+      background: var(--green);
+      animation: pulse-music 1s infinite;
+    }
+    @keyframes pulse-music {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+    .music-btn .music-label { flex: 1; }
+    .music-btn.active .music-play { background: var(--accent2); }
+
+    /* ── Voice Grid ── */
+    .voice-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 8px;
+    }
+    .voice-btn {
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      transition: all 0.2s;
+      font-family: inherit;
+      text-align: center;
+    }
+    .voice-btn:hover { border-color: var(--accent); }
+    .voice-btn.active {
+      border-color: var(--accent);
+      background: rgba(124,58,237,0.15);
+    }
+    .voice-btn .voice-name {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
+    .voice-btn .voice-desc {
+      display: block;
+      font-size: 10px;
+      color: var(--text2);
+    }
+    .voice-btn .voice-play {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 11px;
+      margin: 6px auto 0;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .voice-btn .voice-play:hover {
+      background: var(--accent2);
+      transform: scale(1.1);
+    }
+    .voice-btn .voice-play.playing {
+      background: var(--green);
+      animation: pulse-voice 1s infinite;
+    }
+    @keyframes pulse-voice {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+
+    /* ── Summary ── */
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 500px) {
+      .summary { grid-template-columns: repeat(2, 1fr); }
+    }
+    .summary-item {
+      background: var(--surface2);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .summary-item .s-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text2);
+      margin-bottom: 4px;
+    }
+    .summary-item .s-value {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent3);
+    }
+
+    /* ── Generate Button ── */
+    .generate-btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      border-radius: 16px;
+      padding: 18px;
+      color: white;
+      font-family: inherit;
+      font-size: 17px;
+      font-weight: 800;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: all 0.3s;
+      box-shadow: 0 4px 30px rgba(124,58,237,0.4);
+    }
+    .generate-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 40px rgba(124,58,237,0.55);
+    }
+    .generate-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .generate-btn .price {
+      font-size: 11px;
+      opacity: 0.8;
+      font-weight: 500;
+    }
+
+    /* ── Progress ── */
+    #progress-section {
+      display: none;
+    }
+    #progress-section.show { display: block; }
+    .progress-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 32px;
+      text-align: center;
+    }
+    .progress-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+    .progress-title {
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .progress-step {
+      color: var(--text2);
+      font-size: 15px;
+      margin-bottom: 20px;
+    }
+    .progress-bar-wrap {
+      background: var(--surface2);
+      border-radius: 100px;
+      height: 8px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent3));
+      border-radius: 100px;
+      transition: width 0.8s ease;
+      width: 0%;
+    }
+    .progress-pct {
+      font-size: 13px;
+      color: var(--text2);
+    }
+    .progress-hint {
+      margin-top: 12px;
+    }
+
+    /* ── Step Tracker ── */
+    .step-tracker {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin: 24px 0 20px;
+      flex-wrap: wrap;
+    }
+    .step-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      opacity: 0.35;
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    .step-item.active {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+    .step-item.done {
+      opacity: 0.7;
+    }
+    .step-dot {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 800;
+      color: var(--text2);
+      transition: all 0.3s;
+    }
+    .step-item.active .step-dot {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-color: var(--accent);
+      color: #fff;
+      box-shadow: 0 0 16px rgba(124,58,237,0.5);
+    }
+    .step-item.done .step-dot {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff;
+    }
+    .step-label {
+      font-size: 11px; font-weight: 600;
+      color: var(--text2); white-space: nowrap;
+    }
+    .step-item.active .step-label { color: var(--accent3); }
+    .step-line {
+      width: 24px; height: 2px;
+      background: var(--border);
+      margin-bottom: 20px;
+      transition: background 0.3s;
+    }
+    .step-line.done { background: var(--green); }
+
+    /* ── Step current detail ── */
+    .step-current {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .step-detail-text {
+      font-size: 14px; color: var(--text2);
+      margin-top: 10px;
+    }
+    .progress-hint {
+      margin-top: 4px;
+      font-size: 13px; color: var(--text2);
+      text-align: center;
+    }
+      font-size: 13px;
+      color: var(--text2);
+    }
+
+    /* ── Result ── */
+    #result-section {
+      display: none;
+    }
+    #result-section.show { display: block; }
+    .result-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 32px;
+      text-align: center;
+    }
+    .result-title {
+      font-size: 26px;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+    .result-meta {
+      color: var(--text2);
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+    .result-video {
+      width: 100%;
+      border-radius: 16px;
+      background: #000;
+      margin-bottom: 20px;
+    }
+    .result-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      border-radius: 12px;
+      padding: 14px 28px;
+      color: white;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 20px rgba(124,58,237,0.35);
+      transition: all 0.2s;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 30px rgba(124,58,237,0.5);
+    }
+    .btn-secondary {
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 28px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      background: rgba(124,58,237,0.1);
+    }
+
+    /* ── Error ── */
+    .error-card {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 16px;
+      padding: 24px;
+      margin-top: 20px;
+      text-align: center;
+    }
+    .error-card .err-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--red);
+      margin-bottom: 8px;
+    }
+    .error-card .err-msg {
+      font-size: 13px;
+      color: var(--text2);
+      font-family: monospace;
+      background: rgba(0,0,0,0.3);
+      padding: 10px;
+      border-radius: 8px;
+      text-align: left;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* ── Wave animation ── */
+    @keyframes wave {
+      0%, 100% { transform: scaleY(0.4); }
+      50% { transform: scaleY(1); }
+    }
+    .wave-bars {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 4px;
+      height: 32px;
+      margin-bottom: 20px;
+    }
+    .wave-bar {
+      width: 5px;
+      background: linear-gradient(to top, var(--accent), var(--accent3));
+      border-radius: 4px;
+      animation: wave 1.2s ease-in-out infinite;
+    }
+    .wave-bar:nth-child(1) { animation-delay: 0s; }
+    .wave-bar:nth-child(2) { animation-delay: 0.1s; }
+    .wave-bar:nth-child(3) { animation-delay: 0.2s; }
+    .wave-bar:nth-child(4) { animation-delay: 0.3s; }
+    .wave-bar:nth-child(5) { animation-delay: 0.4s; }
+    .wave-bar:nth-child(6) { animation-delay: 0.5s; }
+    .wave-bar:nth-child(7) { animation-delay: 0.6s; }
+
+    /* ── Mode Tabs ── */
+    .mode-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .mode-tab {
+      flex: 1;
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 20px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text2);
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .mode-tab:hover { border-color: var(--accent); color: var(--text); }
+    .mode-tab.active {
+      border-color: var(--accent);
+      background: rgba(124,58,237,0.15);
+      color: var(--accent3);
+    }
+    .mode-tab .tab-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+
+    /* ── Custom Prompt ── */
+    #prompt-section { display: none; }
+    #prompt-section.show { display: block; }
+    .prompt-wrap {
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+    }
+    .prompt-wrap textarea {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 15px;
+      resize: vertical;
+      min-height: 140px;
+      outline: none;
+    }
+    .prompt-wrap textarea::placeholder { color: var(--text2); }
+    .prompt-tips {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .prompt-tip {
+      background: rgba(124,58,237,0.1);
+      border: 1px solid rgba(124,58,237,0.3);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 11px;
+      color: var(--accent3);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .prompt-tip:hover { background: rgba(124,58,237,0.25); }
+
+    /* ── Angle Variants ── */
+    #angle-section { display: none; }
+    #angle-section.show { display: block; margin-top: 12px; }
+    .angle-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text2);
+      margin-bottom: 8px;
+    }
+    .angle-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 8px;
+    }
+    .angle-btn {
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      transition: all 0.2s;
+      font-family: inherit;
+      text-align: left;
+      line-height: 1.4;
+    }
+    .angle-btn:hover { border-color: var(--accent); }
+    .angle-btn.active {
+      border-color: var(--accent);
+      background: rgba(124,58,237,0.15);
+      color: var(--accent3);
+    }
+    .angle-btn .angle-icon { font-size: 14px; margin-right: 6px; }
+
+    /* ── Subtitle Editor ── */
+    #editor-section { display: none; }
+    #editor-section.show { display: block; }
+    .editor-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .editor-title {
+      font-size: 20px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .editor-back {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 16px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .editor-back:hover { border-color: var(--accent); }
+    .editor-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn-edit-save, .btn-rebuild {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 20px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-edit-save { background: var(--green); }
+    .btn-edit-save:hover:not(:disabled) { background: #16a34a; transform: translateY(-1px); }
+    .btn-edit-save:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-rebuild { background: var(--accent); }
+    .btn-rebuild:hover:not(:disabled) { background: var(--accent2); transform: translateY(-1px); }
+    .btn-rebuild:disabled { opacity: 0.5; cursor: not-allowed; }
+    .editor-preview-row {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 700px) { .editor-preview-row { grid-template-columns: 1fr; } }
+    .editor-video-wrap video {
+      width: 100%;
+      border-radius: 12px;
+      background: #000;
+    }
+    .editor-timeline {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      overflow-x: auto;
+    }
+    .editor-timeline-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text2);
+      margin-bottom: 10px;
+    }
+    .timeline-track {
+      position: relative;
+      height: 48px;
+      background: var(--surface);
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+    .timeline-segments { display: flex; height: 100%; }
+    .timeline-segment {
+      height: 100%;
+      border-right: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: rgba(255,255,255,0.5);
+      overflow: hidden;
+      padding: 0 4px;
+      min-width: 30px;
+      transition: background 0.15s;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .timeline-segment:last-child { border-right: none; }
+    .timeline-segment:hover { background: rgba(124,58,237,0.3); }
+    .timeline-segment.active { background: rgba(124,58,237,0.5); }
+    .timeline-scrubber {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 2px;
+      background: var(--accent3);
+      pointer-events: none;
+      z-index: 2;
+    }
+    .timeline-scrubber::before {
+      content: '';
+      position: absolute;
+      top: -4px; left: -4px;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--accent3);
+    }
+    .timeline-playhead {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text2);
+    }
+    .editor-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .editor-play-btn {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: none;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .editor-play-btn:hover { background: var(--accent2); }
+    .editor-time {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+    .editor-vol {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text2);
+      margin-left: auto;
+    }
+    .editor-vol input[type="range"] { width: 70px; accent-color: var(--accent); }
+    .scene-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+    .scene-item {
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      transition: all 0.2s;
+    }
+    .scene-item:hover { border-color: rgba(124,58,237,0.4); }
+    .scene-item.active { border-color: var(--accent); background: rgba(124,58,237,0.08); }
+    .scene-item-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .scene-num {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text2);
+      background: var(--surface);
+      border-radius: 6px;
+      padding: 2px 8px;
+    }
+    .scene-time {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent3);
+      font-variant-numeric: tabular-nums;
+    }
+    .scene-textarea {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      resize: vertical;
+      min-height: 52px;
+      line-height: 1.5;
+      transition: border-color 0.2s;
+    }
+    .scene-textarea:focus { outline: none; border-color: var(--accent); }
+    .scene-desc {
+      font-size: 11px;
+      color: var(--text2);
+      margin-top: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .scene-actions { display: flex; gap: 6px; margin-top: 8px; justify-content: flex-end; }
+    .scene-del-btn {
+      background: rgba(239,68,68,0.15);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 6px;
+      padding: 4px 10px;
+      color: #ef4444;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .scene-del-btn:hover { background: rgba(239,68,68,0.3); }
+    .add-scene-btn {
+      background: rgba(124,58,237,0.08);
+      border: 2px dashed rgba(124,58,237,0.25);
+      border-radius: 12px;
+      padding: 14px;
+      color: var(--accent3);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .add-scene-btn:hover { background: rgba(124,58,237,0.18); border-color: var(--accent); }
+
+    /* ── Theme grid inside mode ── */
+    #theme-section { display: block; }
+    #theme-section.hidden { display: none; }
+
+    /* ── Caption Modal ── */
+    .caption-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .caption-modal-overlay.show { display: flex; }
+    .caption-modal {
+      background: #13131f;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 900px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 32px;
+      position: relative;
+    }
+    .caption-modal-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      color: var(--text);
+    }
+    .caption-toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .caption-toggle {
+      width: 48px;
+      height: 26px;
+      background: var(--surface2);
+      border-radius: 13px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+      border: none;
+      outline: none;
+      flex-shrink: 0;
+    }
+    .caption-toggle.on { background: var(--accent); }
+    .caption-toggle::after {
+      content: '';
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform 0.2s;
+    }
+    .caption-toggle.on::after { transform: translateX(22px); }
+    .caption-toggle-label { font-size: 15px; font-weight: 600; }
+    .caption-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 700px) { .caption-grid { grid-template-columns: 1fr; } }
+    .caption-left { display: flex; flex-direction: column; gap: 18px; }
+    .caption-fields-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+    }
+    .caption-field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text2);
+      margin-bottom: 6px;
+    }
+    .caption-field input[type="number"],
+    .caption-field select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 14px;
+      padding: 9px 12px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .caption-field input[type="number"]:focus,
+    .caption-field select:focus { border-color: var(--accent); }
+    .caption-color-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .caption-color-swatch {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: 2px solid var(--border);
+      cursor: pointer;
+      flex-shrink: 0;
+      overflow: hidden;
+      position: relative;
+    }
+    .caption-color-swatch input[type="color"] {
+      position: absolute;
+      inset: -4px;
+      width: calc(100% + 8px);
+      height: calc(100% + 8px);
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      opacity: 0;
+    }
+    .caption-color-hex {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 13px;
+      padding: 8px 10px;
+      width: 110px;
+      outline: none;
+    }
+    .caption-color-hex:focus { border-color: var(--accent); }
+    /* Phone preview */
+    .caption-preview-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    .caption-preview-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text2);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .caption-phone {
+      width: 200px;
+      height: 355px;
+      border-radius: 32px;
+      border: 3px solid #333;
+      position: relative;
+      overflow: hidden;
+      background: #0a0a0a;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 20px;
+    }
+    .caption-phone-notch {
+      position: absolute;
+      top: 10px; left: 50%;
+      transform: translateX(-50%);
+      width: 60px; height: 6px;
+      background: #333;
+      border-radius: 3px;
+      z-index: 2;
+    }
+    .caption-preview-text-wrap {
+      width: 100%;
+      padding: 0 10px;
+      text-align: center;
+      transition: all 0.15s;
+    }
+    #caption-preview-text {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+    .caption-modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 28px;
+      flex-wrap: wrap;
+    }
+    .caption-btn-save {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .caption-btn-save:hover { opacity: 0.85; }
+    .caption-btn-reset, .caption-btn-preview-text {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .caption-btn-reset:hover, .caption-btn-preview-text:hover { border-color: var(--accent); }
+    .caption-close {
+      position: absolute;
+      top: 18px; right: 20px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text2);
+      border-radius: 8px;
+      width: 32px; height: 32px;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .caption-close:hover { color: var(--text); border-color: var(--accent); }
+    .btn-configure-captions {
+      background: rgba(124,58,237,0.15);
+      border: 1px solid rgba(124,58,237,0.4);
+      color: var(--accent3);
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-configure-captions:hover { background: rgba(124,58,237,0.3); }
+  </style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="app">
+  <!-- Page header -->
+  <div class="page-header">
+    <span class="page-header-title">🎬 VidRush</span>
+    <span class="page-header-sub">AI-генератор видео</span>
+  </div>
+
+  <!-- Progress (hidden) -->
+  <div id="progress-section">
+    <div class="progress-card">
+      <div class="progress-title">Генерация видео...</div>
+      <div class="progress-hint">Ожидайте 1-3 минуты. Не закрывайте страницу.</div>
+
+      <!-- Step tracker -->
+      <div class="step-tracker" id="step-tracker">
+        <div class="step-item active" id="step-0" data-step="0">
+          <div class="step-dot">1</div>
+          <div class="step-label">📝 Сценарий</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step-item" id="step-1" data-step="1">
+          <div class="step-dot">2</div>
+          <div class="step-label">🖼️ Картинки</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step-item" id="step-2" data-step="2">
+          <div class="step-dot">3</div>
+          <div class="step-label">🎙️ Озвучка</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step-item" id="step-3" data-step="3">
+          <div class="step-dot">4</div>
+          <div class="step-label">📝 Субтитры</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step-item" id="step-4" data-step="4">
+          <div class="step-dot">5</div>
+          <div class="step-label">🎬 Видео</div>
+        </div>
+      </div>
+
+      <!-- Current step detail -->
+      <div class="step-current" id="step-current">
+        <div class="wave-bars">
+          <div class="wave-bar" style="height:12px;animation-delay:0s"></div>
+          <div class="wave-bar" style="height:20px;animation-delay:0.1s"></div>
+          <div class="wave-bar" style="height:30px;animation-delay:0.2s"></div>
+          <div class="wave-bar" style="height:22px;animation-delay:0.3s"></div>
+          <div class="wave-bar" style="height:28px;animation-delay:0.4s"></div>
+          <div class="wave-bar" style="height:18px;animation-delay:0.5s"></div>
+          <div class="wave-bar" style="height:14px;animation-delay:0.6s"></div>
+        </div>
+        <div class="step-detail-text" id="progress-step-text">Запуск...</div>
+      </div>
+
+      <!-- Overall progress -->
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
+      <div class="progress-pct" id="progress-pct">0%</div>
+    </div>
+  </div>
+
+  <!-- Caption Modal -->
+  <div id="caption-modal-overlay" class="caption-modal-overlay"></div>
+
+  <!-- Result (hidden) -->
+  <div id="result-section">
+    <div class="result-card">
+      <div class="result-title">🎉 Видео готово!</div>
+      <div class="result-meta" id="result-meta"></div>
+      <div id="result-video-wrap">
+        <video id="result-video" class="result-video" controls playsinline></video>
+      </div>
+      <div class="result-actions">
+        <a id="download-btn" class="btn-primary" href="#">
+          ⬇️ Скачать MP4
+        </a>
+        <button class="btn-secondary" onclick="openSubtitleEditor()">
+          ✏️ Редактировать субтитры
+        </button>
+        <button class="btn-secondary" onclick="resetForm()">
+          🔄 Создать ещё
+        </button>
+      </div>
+      <div id="error-wrap"></div>
+    </div>
+  </div>
+
+  <!-- Subtitle Editor (hidden) -->
+  <div id="editor-section">
+    <div class="section">
+      <div class="editor-header">
+        <div class="editor-title">✏️ Редактор субтитров</div>
+        <div class="editor-actions">
+          <button class="btn-rebuild" id="rebuild-btn" onclick="rebuildVideo()">
+            🔄 Пересобрать видео
+          </button>
+          <button class="btn-configure-captions" onclick="openCaptionModal()">
+            ⚙️ Настройка субтитров
+          </button>
+          <button class="editor-back" onclick="closeSubtitleEditor()">
+            ← Назад
+          </button>
+        </div>
+      </div>
+
+      <!-- Preview + Timeline -->
+      <div class="editor-preview-row">
+        <div class="editor-video-wrap">
+          <video id="editor-video" class="result-video" controls playsinline></video>
+        </div>
+        <div class="editor-timeline">
+          <div class="editor-timeline-label">⏱ Таймлайн</div>
+          <div class="editor-controls">
+            <button class="editor-play-btn" id="editor-play-btn" onclick="toggleEditorPlay()">▶</button>
+            <div class="editor-time" id="editor-time">0:00 / 0:00</div>
+            <div class="editor-vol">
+              🔊 <input type="range" id="editor-vol" min="0" max="1" step="0.05" value="1" oninput="editorVideo.volume=this.value">
+            </div>
+          </div>
+          <div class="timeline-track" id="timeline-track" onclick="seekTimeline(event)">
+            <div class="timeline-segments" id="timeline-segments"></div>
+            <div class="timeline-scrubber" id="timeline-scrubber" style="left:0%"></div>
+          </div>
+          <div class="timeline-playhead">
+            <span id="tl-start">0:00</span>
+            <span id="tl-end">0:00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scenes -->
+      <div class="section-title">📝 Сцены — редактируйте текст озвучки</div>
+      <div class="scene-list" id="scene-list"></div>
+      <button class="add-scene-btn" onclick="addScene()">➕ Добавить сцену</button>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <div id="form-section">
+
+    <!-- STEP 1: Тема -->
+    <div class="section">
+      <div class="step-header">
+        <div class="step-num">1</div>
+        <div class="step-info">
+          <div class="step-title">Выберите тему</div>
+          <div class="step-desc">О чём будет ваше видео — готовая тема или собственный промпт</div>
+        </div>
+      </div>
+
+      <div class="mode-tabs">
+        <button class="mode-tab active" id="tab-themes" onclick="switchMode('themes')">
+          <span class="tab-icon">📚</span>Готовые темы
+        </button>
+        <button class="mode-tab" id="tab-prompt" onclick="switchMode('prompt')">
+          <span class="tab-icon">✏️</span>Свой промпт
+        </button>
+      </div>
+
+      <div id="theme-section">
+        <div class="theme-grid" id="theme-grid"></div>
+        <div id="angle-section">
+          <div class="angle-label">🔀 Вариант — каждый раз новый контент!</div>
+          <div class="angle-grid" id="angle-grid"></div>
+        </div>
+      </div>
+
+      <div id="prompt-section">
+        <div class="prompt-wrap">
+          <textarea id="prompt-input"
+            placeholder="Опишите видео: тему, стиль, что должно быть показано..."
+            rows="5"></textarea>
+        </div>
+        <div class="prompt-tips">
+          <span class="prompt-tip" onclick="fillPrompt('A cinematic video about space exploration, showing rockets launching and astronauts on the ISS')">🚀 Космос</span>
+          <span class="prompt-tip" onclick="fillPrompt('A dramatic story about ancient Rome, gladiators fighting in the Colosseum')">🏛️ Древний Рим</span>
+          <span class="prompt-tip" onclick="fillPrompt('A fast-paced video about extreme sports: surfing, skateboarding and BMX')">⚡ Экстрим</span>
+          <span class="prompt-tip" onclick="fillPrompt('A mysterious video about deep ocean creatures and underwater world')">🌊 Океан</span>
+          <span class="prompt-tip" onclick="fillPrompt('An educational video about how AI is changing our daily lives')">🤖 ИИ</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: Формат и параметры -->
+    <div class="section">
+      <div class="step-header">
+        <div class="step-num">2</div>
+        <div class="step-info">
+          <div class="step-title">Формат и параметры</div>
+          <div class="step-desc">Язык озвучки, платформа и длина видео</div>
+        </div>
+      </div>
+      <div class="options-row">
+        <div class="option-group">
+          <label>🌐 Язык озвучки</label>
+          <select id="sel-lang"></select>
+        </div>
+        <div class="option-group">
+          <label>📐 Платформа</label>
+          <select id="sel-format">
+            <option value="9:16">📱 Reels / TikTok / Shorts</option>
+            <option value="16:9">🖥️ YouTube (горизонтальное)</option>
+          </select>
+        </div>
+        <div class="option-group">
+          <label>⏱ Длительность</label>
+          <select id="sel-duration">
+            <option value="30">30 сек — Короткое</option>
+            <option value="60" selected>1 мин — Стандарт</option>
+            <option value="90">1.5 мин — Среднее</option>
+            <option value="120">2 мин — Длинное</option>
+            <option value="180">3 мин — Максимум</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: Стиль -->
+    <div class="section">
+      <div class="step-header">
+        <div class="step-num">3</div>
+        <div class="step-info">
+          <div class="step-title">Стиль изображений</div>
+          <div class="step-desc">Визуальный стиль каждого кадра — влияет на генерацию картинок</div>
+        </div>
+      </div>
+      <div class="style-grid" id="style-grid"></div>
+    </div>
+
+    <!-- STEP 4: Музыка -->
+    <div class="section">
+      <div class="step-header">
+        <div class="step-num">4</div>
+        <div class="step-info">
+          <div class="step-title">Фоновая музыка</div>
+          <div class="step-desc">Нажмите ▶ чтобы прослушать трек перед выбором</div>
+        </div>
+      </div>
+      <div class="music-grid" id="music-grid"></div>
+    </div>
+
+    <!-- STEP 5: Голос -->
+    <div class="section">
+      <div class="step-header">
+        <div class="step-num">5</div>
+        <div class="step-info">
+          <div class="step-title">Голос озвучки</div>
+          <div class="step-desc">Нажмите ▶ чтобы прослушать голос на выбранном языке</div>
+        </div>
+      </div>
+      <div class="voice-grid" id="voice-grid"></div>
+    </div>
+
+    <!-- STEP 6: Субтитры -->
+    <div class="section wide">
+      <div class="step-header">
+        <div class="step-num">6</div>
+        <div class="step-info">
+          <div class="step-title">Настройка субтитров</div>
+          <div class="step-desc">Шрифт, цвет, позиция — субтитры будут нарисованы на видео</div>
+        </div>
+      </div>
+
+      <div class="caption-inline" id="caption-inline">
+        <div class="caption-inline-header" onclick="toggleCaptionInline()">
+          <div class="caption-inline-left">
+            <span id="cap-badge" class="caption-on-badge">ВКЛ</span>
+            <span class="caption-inline-title">⚙️ Настроить стиль субтитров</span>
+          </div>
+          <span class="caption-inline-chevron">▼</span>
+        </div>
+        <div class="caption-inline-body">
+          <!-- Toggle row -->
+          <div class="cap-toggle-row">
+            <button class="cap-toggle on" id="cap-toggle" onclick="toggleCapEnabled()"></button>
+            <span class="cap-toggle-label" id="cap-toggle-label">Субтитры включены</span>
+          </div>
+          <!-- 2-col layout: settings + phone preview -->
+          <div class="cap-body-layout">
+            <!-- Left: settings -->
+            <div class="cap-settings-col">
+              <!-- Templates -->
+              <div class="cap-templates" id="cap-templates">
+                <button class="cap-tpl-btn active" data-tpl="bold" onclick="applyCapTemplate('bold')">
+                  <span class="cap-tpl-icon">💥</span><span class="cap-tpl-name">Bold</span>
+                </button>
+                <button class="cap-tpl-btn" data-tpl="cinema" onclick="applyCapTemplate('cinema')">
+                  <span class="cap-tpl-icon">🎬</span><span class="cap-tpl-name">Cinema</span>
+                </button>
+                <button class="cap-tpl-btn" data-tpl="minimal" onclick="applyCapTemplate('minimal')">
+                  <span class="cap-tpl-icon">✨</span><span class="cap-tpl-name">Minimal</span>
+                </button>
+                <button class="cap-tpl-btn" data-tpl="neon" onclick="applyCapTemplate('neon')">
+                  <span class="cap-tpl-icon">🔮</span><span class="cap-tpl-name">Neon</span>
+                </button>
+                <button class="cap-tpl-btn" data-tpl="retro" onclick="applyCapTemplate('retro')">
+                  <span class="cap-tpl-icon">📺</span><span class="cap-tpl-name">Retro</span>
+                </button>
+                <button class="cap-tpl-btn" data-tpl="hand" onclick="applyCapTemplate('hand')">
+                  <span class="cap-tpl-icon">✍️</span><span class="cap-tpl-name">Hand</span>
+                </button>
+              </div>
+
+              <!-- Font family -->
+              <div class="cap-font-row">
+                <label>Шрифт</label>
+                <div class="cap-font-scroll" id="cap-font-scroll"></div>
+              </div>
+
+              <!-- Row 1 -->
+              <div class="cap-row">
+                <div class="cap-field">
+                  <label>Размер</label>
+                  <input type="number" id="cf-fontSize" value="36" min="12" max="120" oninput="capInlineSet('fontSize',+this.value); updatePhonePreview()">
+                </div>
+                <div class="cap-field">
+                  <label>Цвет текста</label>
+                  <div class="cap-color-row">
+                    <div class="cap-swatch" id="cs-textColor" style="background:#FFFFFF">
+                      <input type="color" value="#FFFFFF" oninput="capInlineColor('textColor',this.value); updatePhonePreview()">
+                    </div>
+                    <input class="cap-hex" id="ch-textColor" value="#FFFFFF" oninput="capInlineHex('textColor',this.value); updatePhonePreview()">
+                  </div>
+                </div>
+                <div class="cap-field">
+                  <label>Цвет обводки</label>
+                  <div class="cap-color-row">
+                    <div class="cap-swatch" id="cs-outlineColor" style="background:#000000">
+                      <input type="color" value="#000000" oninput="capInlineColor('outlineColor',this.value); updatePhonePreview()">
+                    </div>
+                    <input class="cap-hex" id="ch-outlineColor" value="#000000" oninput="capInlineHex('outlineColor',this.value); updatePhonePreview()">
+                  </div>
+                </div>
+              </div>
+              <!-- Row 2 -->
+              <div class="cap-row">
+                <div class="cap-field">
+                  <label>Толщина обводки</label>
+                  <input type="number" id="cf-outlineThickness" value="4" min="0" max="20" oninput="capInlineSet('outlineThickness',+this.value); updatePhonePreview()">
+                </div>
+                <div class="cap-field">
+                  <label>Позиция</label>
+                  <select id="cf-verticalPosition" onchange="capInlineSet('verticalPosition',this.value); updatePhonePreview()">
+                    <option value="bottom" selected>Снизу</option>
+                    <option value="middle">По центру</option>
+                    <option value="top">Сверху</option>
+                  </select>
+                </div>
+                <div class="cap-field">
+                  <label>Выравнивание</label>
+                  <select id="cf-alignment" onchange="capInlineSet('alignment',this.value); updatePhonePreview()">
+                    <option value="center" selected>По центру</option>
+                    <option value="left">Слева</option>
+                    <option value="right">Справа</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: phone preview -->
+            <div class="phone-preview-wrap">
+              <div class="phone-label">📱 Превью субтитров</div>
+              <div class="phone-frame">
+                <div class="phone-notch"></div>
+                <div class="phone-status-bar">
+                  <span id="phone-time">10:24</span>
+                  <span>●●●wifi</span>
+                </div>
+                <div class="phone-screen">
+                  <canvas id="phone-canvas" width="196" height="382" style="width:100%;height:100%;display:block;"></canvas>
+                  <div class="phone-caption-zone bottom" id="phone-caption-zone">
+                    <div id="phone-caption-text"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 7: Итог + Кнопка -->
+    <div class="section">
+      <div class="step-header">
+        <div class="step-num">7</div>
+        <div class="step-info">
+          <div class="step-title">Готово — запускаем!</div>
+          <div class="step-desc">Проверьте настройки и нажмите кнопку генерации</div>
+        </div>
+      </div>
+      <div class="summary" id="summary"></div>
+      <button class="generate-btn" id="gen-btn" onclick="startGenerate()">
+        🚀 Сгенерировать видео
+        <br><span class="price">~$0.04 за 15 сек · AI картинки + озвучка + субтитры</span>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ── Theme Angles ───────────────────────────────────────────────────────────
+  const THEME_ANGLES = {
+    health: [
+      { id: "gut", icon: "🧬", label: "Микробиом", prompt: "Focus on gut health and microbiome" },
+      { id: "sleep", icon: "😴", label: "Сон", prompt: "Focus on sleep science" },
+      { id: "longevity", icon: "🧪", label: "Долголетие", prompt: "Focus on longevity" },
+      { id: "mental", icon: "🧠", label: "Ментальное", prompt: "Focus on mental health" },
+      { id: "nutrition", icon: "🥗", label: "Питание", prompt: "Focus on nutrition" },
+    ],
+    finance: [
+      { id: "investing", icon: "📈", label: "Инвестиции", prompt: "Focus on investing basics" },
+      { id: "crypto", icon: "₿", label: "Криптовалюта", prompt: "Focus on crypto" },
+      { id: "budget", icon: "💸", label: "Бюджет", prompt: "Focus on budgeting" },
+      { id: "retire", icon: "🏖️", label: "Пенсия", prompt: "Focus on early retirement" },
+    ],
+    entertainment: [
+      { id: "movies", icon: "🎥", label: "Кино", prompt: "Focus on movies" },
+      { id: "gaming", icon: "🎮", label: "Гейминг", prompt: "Focus on gaming" },
+      { id: "music", icon: "🎵", label: "Музыка", prompt: "Focus on music" },
+      { id: "series", icon: "📺", label: "Сериалы", prompt: "Focus on series" },
+    ],
+    education: [
+      { id: "memory", icon: "🧠", label: "Память", prompt: "Focus on memory techniques" },
+      { id: "langs", icon: "🗣️", label: "Языки", prompt: "Focus on language learning" },
+      { id: "online", icon: "💻", label: "Онлайн", prompt: "Focus on online education" },
+      { id: "physics", icon: "⚛️", label: "Физика", prompt: "Focus on physics" },
+    ],
+    food: [
+      { id: "recipes", icon: "👨‍🍳", label: "Рецепты", prompt: "Focus on recipes" },
+      { id: "world", icon: "🌍", label: "Кухни мира", prompt: "Focus on world cuisines" },
+      { id: "science", icon: "🔬", label: "Наука еды", prompt: "Focus on food science" },
+      { id: "superfoods", icon: "🥑", label: "Суперфуды", prompt: "Focus on superfoods" },
+    ],
+    travel: [
+      { id: "hidden", icon: "🏝️", label: "Скрытые места", prompt: "Focus on hidden places" },
+      { id: "budget", icon: "🎒", label: "Бюджет", prompt: "Focus on budget travel" },
+      { id: "culture", icon: "🎎", label: "Культура", prompt: "Focus on culture" },
+      { id: "adventure", icon: "🧗", label: "Приключения", prompt: "Focus on adventure" },
+    ],
+    technology: [
+      { id: "ai", icon: "🤖", label: "ИИ", prompt: "Focus on AI" },
+      { id: "space", icon: "🚀", label: "Космос", prompt: "Focus on space" },
+      { id: "gadgets", icon: "📱", label: "Гаджеты", prompt: "Focus on gadgets" },
+      { id: "cyber", icon: "💻", label: "Кибер", prompt: "Focus on cybersecurity" },
+    ],
+    history: [
+      { id: "rome", icon: "🏛️", label: "Древний Рим", prompt: "Focus on Ancient Rome" },
+      { id: "egypt", icon: "🐫", label: "Египет", prompt: "Focus on Ancient Egypt" },
+      { id: "ww2", icon: "⚔️", label: "Вторая мировая", prompt: "Focus on WWII" },
+      { id: "lost", icon: "🏺", label: "Цивилизации", prompt: "Focus on lost civilizations" },
+    ],
+    military: [
+      { id: "weapons", icon: "🔫", label: "Оружие", prompt: "Focus on weapons" },
+      { id: "battles", icon: "💥", label: "Сражения", prompt: "Focus on battles" },
+      { id: "navy", icon: "⚓", label: "Флот", prompt: "Focus on naval warfare" },
+      { id: "air", icon: "✈️", label: "Авиация", prompt: "Focus on aviation" },
+    ],
+    sports: [
+      { id: "records", icon: "🏆", label: "Рекорды", prompt: "Focus on records broken" },
+      { id: "comebacks", icon: "🔥", label: "Камбэки", prompt: "Focus on comebacks" },
+      { id: "extreme", icon: "🏄", label: "Экстрим", prompt: "Focus on extreme sports" },
+      { id: "legends", icon: "⭐", label: "Легенды", prompt: "Focus on legends" },
+    ],
+    politics: [
+      { id: "elections", icon: "🗳️", label: "Выборы", prompt: "Focus on elections" },
+      { id: "geopol", icon: "🌍", label: "Геополитика", prompt: "Focus on geopolitics" },
+      { id: "leaders", icon: "👔", label: "Лидеры", prompt: "Focus on leaders" },
+    ],
+    business: [
+      { id: "startup", icon: "🚀", label: "Стартапы", prompt: "Focus on startups" },
+      { id: "failures", icon: "💔", label: "Провалы", prompt: "Focus on failures" },
+      { id: "innovation", icon: "💡", label: "Инновации", prompt: "Focus on innovation" },
+      { id: "rich", icon: "💰", label: "Богатство", prompt: "Focus on building wealth" },
+    ],
+    science: [
+      { id: "universe", icon: "🌌", label: "Вселенная", prompt: "Focus on the universe" },
+      { id: "brain", icon: "🧠", label: "Мозг", prompt: "Focus on brain science" },
+      { id: "dinos", icon: "🦖", label: "Динозавры", prompt: "Focus on dinosaurs" },
+      { id: "quantum", icon: "⚛️", label: "Кванты", prompt: "Focus on quantum physics" },
+    ],
+    environment: [
+      { id: "climate", icon: "🌡️", label: "Климат", prompt: "Focus on climate change" },
+      { id: "ocean", icon: "🌊", label: "Океан", prompt: "Focus on ocean" },
+      { id: "animals", icon: "🦁", label: "Животные", prompt: "Focus on endangered species" },
+      { id: "renewable", icon: "☀️", label: "Энергия", prompt: "Focus on renewable energy" },
+    ],
+  };
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  let config = null;
+  let state = {
+    mode: "themes",
+    theme: null,
+    angle: null,
+    angleList: [],
+    customPrompt: "",
+    lang: "ru",
+    format: "9:16",
+    duration: 60,  // default 1 min
+    style: "fantasy",
+    music: "none",
+    voice: "alloy",
+  };
+  let currentJobId = null;
+  let eventSource = null;
+
+  // ── Init ─────────────────────────────────────────────────────────────────────
+  async function init() {
+    const resp = await fetch("/api/config");
+    config = await resp.json();
+    renderConfig();
+    updateSummary();
+    renderFontScroll();
+    // Draw initial phone preview
+    setTimeout(updatePhonePreview, 100);
+  }
+
+  function renderConfig() {
+    const tg = document.getElementById("theme-grid");
+    tg.innerHTML = config.themes.map(function(t) {
+      return `<button class="theme-btn" data-id="${t.id}" onclick="selectTheme('${t.id}', this)"><span class="emoji">${t.emoji}</span>${t.label}</button>`;
+    }).join("");
+
+    const sl = document.getElementById("sel-lang");
+    sl.innerHTML = config.langs.map(function(l) {
+      return '<option value="'+l.id+'">'+l.label+'</option>';
+    }).join("");
+
+    // Style gradient backgrounds based on color
+    var styleGradients = {
+      "fantasy":      "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)",
+      "cinematic":    "linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #fda085 100%)",
+      "standard":     "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+      "anime":        "linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%)",
+      "illustration": "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
+      "monochrome":   "linear-gradient(135deg, #2c3e50 0%, #4ca1af 100%)",
+      "moody":        "linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)",
+      "photography":  "linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%)",
+      "3d":           "linear-gradient(135deg, #f7971e 0%, #ffd200 100%)",
+      "retro":        "linear-gradient(135deg, #e94057 0%, #f27121 100%)",
+    };
+
+    const styleIcons = {
+      "fantasy": "🧙", "cinematic": "🎬", "standard": "🖼️", "anime": "🎨",
+      "illustration": "✏️", "monochrome": "⬛", "moody": "🌑", "photography": "📷",
+      "3d": "🧊", "retro": "📺",
+    };
+
+    const sg = document.getElementById("style-grid");
+    sg.innerHTML = config.styles.map(function(s) {
+      var active = s.id === state.style ? " active" : "";
+      var grad = styleGradients[s.id] || ("linear-gradient(135deg, " + s.color + " 0%, " + s.color + "aa 100%)");
+      var icon = styleIcons[s.id] || "🎨";
+      return `<button class="style-btn${active}" data-id="${s.id}" style="background:${grad}" onclick="selectStyle('${s.id}', this)">
+        <span class="style-icon">${icon}</span>
+        <span class="style-name">${s.label}</span>
+        <span class="style-desc">${s.desc || ""}</span>
+      </button>`;
+    }).join("");
+
+    const mg = document.getElementById("music-grid");
+    mg.innerHTML = config.music.map(function(m) {
+      var active = m.id === state.music ? " active" : "";
+      var playBtn = m.id !== "none"
+        ? `<button class="music-play" onclick="event.stopPropagation(); playMusicPreview('${m.id}', this)" title="Прослушать">▶</button>`
+        : `<span class="music-play" style="background:#333;cursor:default;">🔇</span>`;
+      return `<div class="music-btn${active}" data-id="${m.id}" onclick="selectMusic('${m.id}', this)">${playBtn}<span class="music-label">${m.label}</span></div>`;
+    }).join("");
+
+    const vg = document.getElementById("voice-grid");
+    vg.innerHTML = config.voices.map(function(v) {
+      var active = v.id === state.voice ? " active" : "";
+      return `<div class="voice-btn${active}" data-id="${v.id}" onclick="selectVoice('${v.id}', this)">
+        <div class="voice-name">${v.label}</div>
+        <div class="voice-desc">${v.desc}</div>
+        <button class="voice-play" onclick="event.stopPropagation(); playVoicePreview('${v.id}', this)" title="Прослушать">▶</button>
+      </div>`;
+    }).join("");
+  }
+
+  // ── Mode ─────────────────────────────────────────────────────────────────────
+  function switchMode(mode) {
+    state.mode = mode;
+    document.getElementById("tab-themes").classList.toggle("active", mode === "themes");
+    document.getElementById("tab-prompt").classList.toggle("active", mode === "prompt");
+    document.getElementById("theme-section").classList.toggle("hidden", mode === "prompt");
+    document.getElementById("prompt-section").classList.toggle("show", mode === "prompt");
+    updateSummary();
+  }
+
+  // ── Theme + Angle ─────────────────────────────────────────────────────────
+  function selectTheme(id, btn) {
+    state.theme = id;
+    state.angle = null;
+    document.querySelectorAll(".theme-btn").forEach(function(b){ b.classList.remove("active"); });
+    btn.classList.add("active");
+    var angles = THEME_ANGLES[id] || [];
+    state.angleList = angles;
+    var as = document.getElementById("angle-section");
+    var ag = document.getElementById("angle-grid");
+    if (angles.length > 0) {
+      ag.innerHTML = angles.map(function(a) {
+        return `<button class="angle-btn" data-id="${a.id}" onclick="selectAngle('${a.id}', this)"><span class="angle-icon">${a.icon}</span>${a.label}</button>`;
+      }).join("");
+      as.classList.add("show");
+      var rand = angles[Math.floor(Math.random() * angles.length)];
+      selectAngle(rand.id, ag.querySelector(`[data-id="${rand.id}"]`));
+    } else {
+      as.classList.remove("show");
+    }
+    updateSummary();
+  }
+
+  function selectAngle(id, btn) {
+    state.angle = id;
+    document.querySelectorAll(".angle-btn").forEach(function(b){ b.classList.remove("active"); });
+    if (btn) btn.classList.add("active");
+    updateSummary();
+  }
+
+  function selectStyle(id, btn) {
+    state.style = id;
+    document.querySelectorAll(".style-btn").forEach(function(b){ b.classList.remove("active"); });
+    btn.classList.add("active");
+    updateSummary();
+  }
+
+  function selectMusic(id, btn) {
+    state.music = id;
+    document.querySelectorAll(".music-btn").forEach(function(b){ b.classList.remove("active"); });
+    btn.classList.add("active");
+    updateSummary();
+  }
+
+  function selectVoice(id, btn) {
+    state.voice = id;
+    document.querySelectorAll(".voice-btn").forEach(function(b){ b.classList.remove("active"); });
+    btn.classList.add("active");
+    updateSummary();
+  }
+
+  let previewAudio = null;
+  let currentVoiceId = null;
+  let currentVoiceBtn = null;
+  let previewUrl = null;
+
+  const PREVIEW_TEXTS = {
+    en: "Welcome! This is how your video will sound.",
+    ru: "Привет! Вот так будет звучать ваше видео.",
+    uk: "Привіт! Ось так звучатиме ваше відео.",
+    es: "¡Hola! Así sonará tu video.",
+    de: "Hallo! So wird Ihr Video klingen.",
+    fr: "Bonjour! C'est ainsi que votre vidéo sonnera.",
+    pt: "Olá! É assim que seu vídeo vai soar.",
+    ar: "!مرحبا! هكذا سيكون صوت الفيديو الخاص بك",
+    zh: "你好！这是你的视频将会有的声音。",
+    ja: "こんにちは！このように動画が再生されます。",
+    ko: "안녕하세요! 이렇게 비디오가 재생됩니다.",
+  };
+
+  function playVoicePreview(voiceId, btn) {
+    // If same voice is playing — PAUSE / RESUME
+    if (currentVoiceId === voiceId && previewAudio) {
+      if (previewAudio.paused) {
+        previewAudio.play();
+        btn.textContent = "⏸";
+        btn.classList.add("playing");
+      } else {
+        previewAudio.pause();
+        btn.textContent = "▶";
+        btn.classList.remove("playing");
+      }
+      return;
+    }
+
+    // Stop any currently playing preview
+    if (previewAudio) {
+      previewAudio.pause();
+      previewAudio = null;
+      if (currentVoiceBtn) {
+        currentVoiceBtn.textContent = "▶";
+        currentVoiceBtn.classList.remove("playing");
+      }
+    }
+    // Stop music preview too
+    if (musicAudio) {
+      musicAudio.pause();
+      musicAudio = null;
+      if (currentMusicBtn) {
+        currentMusicBtn.textContent = "▶";
+        currentMusicBtn.classList.remove("playing");
+      }
+    }
+
+    // Show playing state
+    currentVoiceId = voiceId;
+    currentVoiceBtn = btn;
+    btn.classList.add("playing");
+    btn.textContent = "⏸";
+
+    var lang = state.lang || "en";
+    fetch("/api/preview?voice=" + encodeURIComponent(voiceId) + "&lang=" + encodeURIComponent(lang))
+      .then(function(r) { return r.blob(); })
+      .then(function(blob) {
+        if (currentVoiceId !== voiceId) return; // stale request
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+        previewUrl = URL.createObjectURL(blob);
+        previewAudio = new Audio(previewUrl);
+        previewAudio.play();
+        previewAudio.onended = function() {
+          btn.classList.remove("playing");
+          btn.textContent = "▶";
+          if (previewUrl) URL.revokeObjectURL(previewUrl);
+          previewAudio = null;
+          currentVoiceId = null;
+          currentVoiceBtn = null;
+          previewUrl = null;
+        };
+        previewAudio.onerror = function() {
+          btn.classList.remove("playing");
+          btn.textContent = "▶";
+          previewAudio = null;
+          currentVoiceId = null;
+          currentVoiceBtn = null;
+        };
+      })
+      .catch(function() {
+        btn.classList.remove("playing");
+        btn.textContent = "▶";
+        previewAudio = null;
+        currentVoiceId = null;
+        currentVoiceBtn = null;
+      });
+  }
+
+  let musicAudio = null;
+  let currentMusicId = null;
+  let currentMusicBtn = null;
+
+  function playMusicPreview(musicId, btn) {
+    if (musicId === "none") return;
+
+    // If same track is playing — PAUSE / RESUME
+    if (currentMusicId === musicId && musicAudio) {
+      if (musicAudio.paused) {
+        musicAudio.play();
+        btn.textContent = "⏸";
+        btn.classList.add("playing");
+      } else {
+        musicAudio.pause();
+        btn.textContent = "▶";
+        btn.classList.remove("playing");
+      }
+      return;
+    }
+
+    // Stop any currently playing music
+    if (musicAudio) {
+      musicAudio.pause();
+      musicAudio = null;
+      if (currentMusicBtn) {
+        currentMusicBtn.textContent = "▶";
+        currentMusicBtn.classList.remove("playing");
+      }
+    }
+    // Stop voice preview too
+    if (previewAudio) {
+      previewAudio.pause();
+      previewAudio = null;
+      document.querySelectorAll(".voice-play").forEach(function(b){ b.classList.remove("playing"); b.textContent = "▶"; });
+    }
+
+    // Start new track
+    currentMusicId = musicId;
+    currentMusicBtn = btn;
+    btn.classList.add("playing");
+    btn.textContent = "⏸";
+    musicAudio = new Audio("/api/music-preview?id=" + encodeURIComponent(musicId));
+    musicAudio.play();
+    musicAudio.onended = function() {
+      btn.classList.remove("playing");
+      btn.textContent = "▶";
+      musicAudio = null;
+      currentMusicId = null;
+      currentMusicBtn = null;
+    };
+    musicAudio.onerror = function() {
+      btn.classList.remove("playing");
+      btn.textContent = "▶";
+      musicAudio = null;
+      currentMusicId = null;
+      currentMusicBtn = null;
+    };
+  }
+
+  // ── Prompt helpers ────────────────────────────────────────────────────────
+  function fillPrompt(text) {
+    document.getElementById("prompt-input").value = text;
+    state.customPrompt = text;
+    updateSummary();
+  }
+
+  document.getElementById("prompt-input").addEventListener("input", function(e) {
+    state.customPrompt = e.target.value;
+    updateSummary();
+  });
+
+  function updateSummary() {
+    var topicText;
+    if (state.mode === "prompt") {
+      topicText = state.customPrompt ? state.customPrompt.slice(0, 45) + (state.customPrompt.length > 45 ? "..." : "") : "Ваш промпт...";
+    } else {
+      var tl = (config.themes.find(function(t){ return t.id === state.theme; }) || {}).label || "—";
+      var ao = state.angleList.find(function(a){ return a.id === state.angle; });
+      topicText = ao ? tl + " > " + ao.icon + " " + ao.label : tl;
+    }
+    var ll = (config.langs.find(function(l){ return l.id === state.lang; }) || {}).label || state.lang;
+    var sl = (config.styles.find(function(s){ return s.id === state.style; }) || {}).label || state.style;
+    var vl = (config.voices.find(function(v){ return v.id === state.voice; }) || {}).label || state.voice;
+    document.getElementById("summary").innerHTML =
+      "<div class=\"summary-item\"><div class=\"s-label\">Тема</div><div class=\"s-value\">" + topicText + "</div></div>" +
+      "<div class=\"summary-item\"><div class=\"s-label\">Язык / Формат</div><div class=\"s-value\">" + ll + " / " + state.format + "</div></div>" +
+      "<div class=\"summary-item\"><div class=\"s-label\">Длит. / Стиль / Голос</div><div class=\"s-value\">" + state.duration + "с / " + sl + " / " + vl + "</div></div>";
+  }
+
+  document.getElementById("sel-lang").addEventListener("change", function(e) { state.lang = e.target.value; updateSummary(); updatePhonePreview(); });
+  document.getElementById("sel-format").addEventListener("change", function(e) { state.format = e.target.value; updateSummary(); });
+  document.getElementById("sel-duration").addEventListener("change", function(e) { state.duration = parseInt(e.target.value); updateSummary(); });
+
+  // ── Generate ────────────────────────────────────────────────────────────────
+  var STEPS = ["Сценарий...", "Картинки...", "Озвучка...", "Субтитры...", "Сборка видео..."];
+
+  function showProgress() {
+    // Reset step tracker
+    document.querySelectorAll(".step-item").forEach(function(el) {
+      el.classList.remove("active", "done");
+    });
+    document.querySelectorAll(".step-line").forEach(function(el) {
+      el.classList.remove("done");
+    });
+    // Activate first step
+    var first = document.getElementById("step-0");
+    if (first) first.classList.add("active");
+    document.getElementById("progress-bar").style.width = "0%";
+    document.getElementById("progress-pct").textContent = "0%";
+    document.getElementById("progress-step-text").textContent = "Запуск...";
+    document.getElementById("form-section").style.display = "none";
+    document.getElementById("progress-section").classList.add("show");
+    document.getElementById("result-section").classList.remove("show");
+  }
+
+  async function startGenerate() {
+    if (state.mode === "themes" && !state.theme) { alert("Выберите тему!"); return; }
+    if (state.mode === "themes" && !state.angle) { alert("Выберите вариант темы!"); return; }
+    if (state.mode === "prompt" && !state.customPrompt.trim()) { alert("Напишите свой промпт!"); return; }
+
+    var btn = document.getElementById("gen-btn");
+    btn.disabled = true;
+    btn.innerHTML = "⏳ Запуск...";
+
+    try {
+      var body = { lang: state.lang, format: state.format, duration: state.duration, style: state.style, music: state.music, voice: state.voice, captionSettings: capSettings };
+      if (state.mode === "themes") {
+        body.theme = state.theme;
+        body.angle = state.angle;
+        var ao = state.angleList.find(function(a){ return a.id === state.angle; });
+        body.topicHint = ao ? ao.prompt : "";
+      } else {
+        body.customPrompt = state.customPrompt;
+      }
+      var resp = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      var data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || "Ошибка сервера");
+      currentJobId = data.jobId;
+      showProgress();
+      eventSource = new EventSource(data.statusUrl);
+      eventSource.onmessage = function(e) { onJobUpdate(JSON.parse(e.data)); };
+      eventSource.onerror = function() {};
+    } catch (err) {
+      btn.disabled = false;
+      btn.innerHTML = "🚀 Сгенерировать видео<br><span class=\"price\">~$0.04 за 15 сек видео</span>";
+      showError(err.message);
+    }
+  }
+
+  function onJobUpdate(job) {
+    var bar = document.getElementById("progress-bar");
+    var pct = document.getElementById("progress-pct");
+    var stepText = document.getElementById("progress-step-text");
+    if (job.status === "done") {
+      bar.style.width = "100%";
+      pct.textContent = "100%";
+      stepText.textContent = "Готово! 🎉";
+      if (eventSource) { eventSource.close(); eventSource = null; }
+      showResult(job);
+    } else if (job.status === "error") {
+      if (eventSource) { eventSource.close(); eventSource = null; }
+      document.getElementById("progress-section").classList.remove("show");
+      document.getElementById("form-section").style.display = "";
+      document.getElementById("gen-btn").disabled = false;
+      document.getElementById("gen-btn").innerHTML = "🚀 Сгенерировать видео<br><span class=\"price\">~$0.04 за 15 сек видео</span>";
+      showError(job.error || "Ошибка");
+    } else if (job.status === "running") {
+      var si = STEPS.findIndex(function(s){ return job.step && job.step.includes(s.slice(0, 5)); });
+      var pr = si >= 0 ? Math.round((si / STEPS.length) * 90) : (job.progress || 0);
+      bar.style.width = pr + "%";
+      pct.textContent = pr + "%";
+      stepText.textContent = job.step || STEPS[0];
+
+      // Highlight current step in tracker
+      document.querySelectorAll(".step-item").forEach(function(el, idx) {
+        el.classList.remove("active", "done");
+        if (idx < si) el.classList.add("done");
+        else if (idx === si) el.classList.add("active");
+      });
+      document.querySelectorAll(".step-line").forEach(function(el, idx) {
+        el.classList.toggle("done", idx < si);
+      });
+    }
+  }
+
+  function showResult(job) {
+    setTimeout(function() {
+      document.getElementById("progress-section").classList.remove("show");
+      document.getElementById("result-section").classList.add("show");
+      var video = document.getElementById("result-video");
+      video.src = "/api/download/" + currentJobId;
+      video.load();
+      document.getElementById("result-meta").textContent = (job.langLabel || job.lang) + " · " + job.format + " · " + job.duration + "с · " + (job.styleLabel || job.style);
+      document.getElementById("download-btn").href = "/api/download/" + currentJobId;
+    }, 1000);
+  }
+
+  function showError(msg) {
+    document.getElementById("error-wrap").innerHTML = "<div class=\"error-card\"><div class=\"err-title\">❌ Ошибка</div><div class=\"err-msg\">" + msg + "</div></div>";
+  }
+
+  function resetForm() {
+    if (eventSource) { eventSource.close(); eventSource = null; }
+    document.getElementById("result-section").classList.remove("show");
+    document.getElementById("progress-section").classList.remove("show");
+    document.getElementById("editor-section").classList.remove("show");
+    document.getElementById("form-section").style.display = "";
+    document.getElementById("gen-btn").disabled = false;
+    document.getElementById("gen-btn").innerHTML = "🚀 Сгенерировать видео<br><span class=\"price\">~$0.04 за 15 сек видео</span>";
+    document.getElementById("error-wrap").innerHTML = "";
+  }
+
+  // ── Subtitle Editor ────────────────────────────────────────────────────────────
+  let editorVideo = null;
+  let editorScript = null;
+  let editorActiveScene = null;
+  let editorEventSource = null;
+
+  function openSubtitleEditor() {
+    document.getElementById("result-section").classList.remove("show");
+    document.getElementById("editor-section").classList.add("show");
+    document.getElementById("rebuild-btn").disabled = false;
+
+    editorVideo = document.getElementById("editor-video");
+    editorVideo.src = "/api/download/" + currentJobId;
+    editorVideo.load();
+
+    editorVideo.ontimeupdate = function() { updateTimelineScrubber(); };
+    editorVideo.onloadedmetadata = function() {
+      document.getElementById("editor-time").textContent = fmtTime(editorVideo.currentTime) + " / " + fmtTime(editorVideo.duration);
+      document.getElementById("tl-end").textContent = fmtTime(editorVideo.duration);
+    };
+
+    fetch("/api/job/" + currentJobId + "/script")
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        editorScript = data;
+        renderSceneList();
+        renderTimeline();
+      })
+      .catch(function(e) { console.error(e); });
+  }
+
+  function closeSubtitleEditor() {
+    document.getElementById("editor-section").classList.remove("show");
+    document.getElementById("result-section").classList.add("show");
+    if (editorVideo) editorVideo.pause();
+    if (editorEventSource) { editorEventSource.close(); editorEventSource = null; }
+  }
+
+  function fmtTime(sec) {
+    sec = Math.max(0, sec || 0);
+    var m = Math.floor(sec / 60);
+    var s = Math.floor(sec % 60);
+    return m + ":" + (s < 10 ? "0" : "") + s;
+  }
+
+  function renderSceneList() {
+    var list = document.getElementById("scene-list");
+    if (!editorScript || !editorScript.scenes) { list.innerHTML = ""; return; }
+    var offset = 0;
+    list.innerHTML = editorScript.scenes.map(function(scene, i) {
+      var end = offset + scene.duration;
+      var range = fmtTime(offset) + " – " + fmtTime(end);
+      var active = editorActiveScene === i ? " active" : "";
+      var html = '<div class="scene-item' + active + '" data-idx="' + i + '" onclick="selectScene(' + i + ')">' +
+        '<div class="scene-item-header">' +
+          '<span class="scene-num">Сцена ' + (i + 1) + '</span>' +
+          '<span class="scene-time">⏱ ' + range + '</span>' +
+        '</div>' +
+        '<textarea class="scene-textarea" rows="2" data-idx="' + i + '" oninput="onSceneTextChange(' + i + ', this.value)">' + (scene.voiceover || "") + '</textarea>' +
+        '<div class="scene-desc">🖼 ' + (scene.image_description || "—") + '</div>' +
+        '<div class="scene-actions">' +
+          '<button class="scene-del-btn" onclick="event.stopPropagation(); deleteScene(' + i + ')">🗑 Удалить</button>' +
+        '</div>' +
+      '</div>';
+      offset = end;
+      return html;
+    }).join("");
+  }
+
+  function renderTimeline() {
+    if (!editorScript || !editorScript.scenes) return;
+    var segs = document.getElementById("timeline-segments");
+    var total = editorScript.scenes.reduce(function(s, sc) { return s + (sc.duration || 5); }, 0);
+    segs.innerHTML = editorScript.scenes.map(function(scene, i) {
+      var pct = ((scene.duration || 5) / total * 100).toFixed(2) + "%";
+      var active = editorActiveScene === i ? " active" : "";
+      return '<div class="timeline-segment' + active + '" style="width:' + pct + '" onclick="event.stopPropagation(); selectScene(' + i + ')" title="Сцена ' + (i+1) + '">' + (i+1) + '</div>';
+    }).join("");
+    document.getElementById("tl-end").textContent = fmtTime(total);
+  }
+
+  function selectScene(idx) {
+    editorActiveScene = idx;
+    if (!editorScript || !editorScript.scenes) return;
+    // Seek video to scene start
+    var offset = 0;
+    for (var i = 0; i < idx; i++) offset += editorScript.scenes[i].duration || 5;
+    if (editorVideo) {
+      editorVideo.currentTime = offset;
+      editorVideo.pause();
+    }
+    renderSceneList();
+    renderTimeline();
+    // Scroll into view
+    var el = document.querySelector('.scene-item[data-idx="' + idx + '"]');
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  function onSceneTextChange(idx, value) {
+    if (!editorScript || !editorScript.scenes) return;
+    editorScript.scenes[idx].voiceover = value;
+  }
+
+  function deleteScene(idx) {
+    if (!editorScript || !editorScript.scenes) return;
+    if (editorScript.scenes.length <= 1) { alert("Нужна хотя бы одна сцена!"); return; }
+    editorScript.scenes.splice(idx, 1);
+    if (editorActiveScene >= editorScript.scenes.length) editorActiveScene = editorScript.scenes.length - 1;
+    renderSceneList();
+    renderTimeline();
+  }
+
+  function addScene() {
+    if (!editorScript || !editorScript.scenes) return;
+    editorScript.scenes.push({ duration: 5, voiceover: "Новый текст...", image_description: "new scene" });
+    editorActiveScene = editorScript.scenes.length - 1;
+    renderSceneList();
+    renderTimeline();
+    var el = document.querySelector('.scene-item[data-idx="' + editorActiveScene + '"]');
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  function toggleEditorPlay() {
+    if (!editorVideo) return;
+    var btn = document.getElementById("editor-play-btn");
+    if (editorVideo.paused) {
+      editorVideo.play();
+      btn.textContent = "⏸";
+    } else {
+      editorVideo.pause();
+      btn.textContent = "▶";
+    }
+  }
+
+  function updateTimelineScrubber() {
+    if (!editorVideo || !editorVideo.duration) return;
+    var pct = (editorVideo.currentTime / editorVideo.duration * 100).toFixed(2) + "%";
+    document.getElementById("timeline-scrubber").style.left = pct;
+    document.getElementById("editor-time").textContent = fmtTime(editorVideo.currentTime) + " / " + fmtTime(editorVideo.duration);
+  }
+
+  function seekTimeline(e) {
+    if (!editorVideo || !editorVideo.duration) return;
+    var rect = e.currentTarget.getBoundingClientRect();
+    var pct = (e.clientX - rect.left) / rect.width;
+    editorVideo.currentTime = pct * editorVideo.duration;
+  }
+
+  function rebuildVideo() {
+    var btn = document.getElementById("rebuild-btn");
+    btn.disabled = true;
+    btn.textContent = "⏳ Пересборка...";
+
+    if (editorEventSource) { editorEventSource.close(); editorEventSource = null; }
+
+    // 1. Save script
+    fetch("/api/job/" + currentJobId + "/script", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(editorScript)
+    })
+    .then(function(r) {
+      if (!r.ok) throw new Error("Ошибка сохранения скрипта");
+      // 2. Start rebuild
+      return fetch("/api/job/" + currentJobId + "/rebuild", { method: "POST" });
+    })
+    .then(function(r) {
+      if (!r.ok) throw new Error("Ошибка запуска пересборки");
+      // 3. Listen via SSE
+      editorEventSource = new EventSource("/api/status/" + currentJobId);
+      editorEventSource.onmessage = function(e) {
+        var job = JSON.parse(e.data);
+        if (job.status === "done") {
+          editorEventSource.close(); editorEventSource = null;
+          editorVideo.src = "/api/download/" + currentJobId + "?t=" + Date.now();
+          editorVideo.load();
+          btn.disabled = false;
+          btn.textContent = "🔄 Пересобрать видео";
+          // Show toast
+          var t = document.createElement("div");
+          t.style.cssText = "position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#22c55e;color:#fff;padding:12px 24px;border-radius:12px;font-weight:600;z-index:9999;font-size:14px;";
+          t.textContent = "✅ Видео пересобрано!";
+          document.body.appendChild(t);
+          setTimeout(function(){ document.body.removeChild(t); }, 3000);
+        } else if (job.status === "error") {
+          editorEventSource.close(); editorEventSource = null;
+          btn.disabled = false;
+          btn.textContent = "🔄 Пересобрать видео";
+          alert("❌ Ошибка: " + (job.error || "Неизвестная ошибка"));
+        } else {
+          btn.textContent = "⏳ " + (job.step || "Пересборка...");
+        }
+      };
+      editorEventSource.onerror = function() {
+        editorEventSource.close(); editorEventSource = null;
+        btn.disabled = false;
+        btn.textContent = "🔄 Пересобрать видео";
+      };
+    })
+    .catch(function(e) {
+      btn.disabled = false;
+      btn.textContent = "🔄 Пересобрать видео";
+      alert("❌ Ошибка: " + e.message);
+    });
+  }
+
+  init();
+
+  // ── Inline Caption Settings ───────────────────────────────────────────────────
+
+  let capSettings = {
+    enabled: true,
+    fontFamily: "Montserrat",
+    fontSize: 36,
+    textColor: "#FFFFFF",
+    highlightColor: "#FFFF00",
+    outlineColor: "#000000",
+    outlineThickness: 4,
+    verticalPosition: "bottom",
+    alignment: "center",
+    wordsPerLine: 6,
+    verticalMargin: 60,
+  };
+
+  // ── Caption Fonts ────────────────────────────────────────────────────────────
+  const CAP_FONTS = [
+    { id: "Montserrat", label: "Montserrat", weight: "800" },
+    { id: "Bebas Neue", label: "Bebas Neue", weight: "400" },
+    { id: "Anton", label: "Anton", weight: "400" },
+    { id: "Oswald", label: "Oswald", weight: "700" },
+    { id: "Poppins", label: "Poppins", weight: "700" },
+    { id: "Playfair Display", label: "Playfair", weight: "900" },
+    { id: "Alfa Slab One", label: "Alfa Slab", weight: "400" },
+    { id: "Permanent Marker", label: "Marker", weight: "400" },
+    { id: "Inter", label: "Inter", weight: "800" },
+  ];
+
+  // ── Caption Templates ────────────────────────────────────────────────────────
+  const CAP_TEMPLATES = {
+    bold: {
+      fontFamily: "Montserrat", fontSize: 42, textColor: "#FFFFFF",
+      outlineColor: "#000000", outlineThickness: 5,
+      verticalPosition: "bottom", alignment: "center",
+    },
+    cinema: {
+      fontFamily: "Bebas Neue", fontSize: 48, textColor: "#F5C518",
+      outlineColor: "#000000", outlineThickness: 6,
+      verticalPosition: "bottom", alignment: "center",
+    },
+    minimal: {
+      fontFamily: "Poppins", fontSize: 30, textColor: "#FFFFFF",
+      outlineColor: "#000000", outlineThickness: 2,
+      verticalPosition: "bottom", alignment: "center",
+    },
+    neon: {
+      fontFamily: "Anton", fontSize: 44, textColor: "#00FFFF",
+      outlineColor: "#FF00FF", outlineThickness: 4,
+      verticalPosition: "bottom", alignment: "center",
+    },
+    retro: {
+      fontFamily: "Permanent Marker", fontSize: 34, textColor: "#FFE033",
+      outlineColor: "#FF6600", outlineThickness: 3,
+      verticalPosition: "bottom", alignment: "center",
+    },
+    hand: {
+      fontFamily: "Permanent Marker", fontSize: 32, textColor: "#FFFFFF",
+      outlineColor: "#000000", outlineThickness: 3,
+      verticalPosition: "bottom", alignment: "center",
+    },
+  };
+
+  function applyCapTemplate(tplId) {
+    var tpl = CAP_TEMPLATES[tplId];
+    if (!tpl) return;
+    Object.assign(capSettings, tpl);
+    // Update form fields
+    document.querySelectorAll(".cap-tpl-btn").forEach(function(b) {
+      b.classList.toggle("active", b.dataset.tpl === tplId);
+    });
+    syncCapFields();
+    updatePhonePreview();
+  }
+
+  function syncCapFields() {
+    var fields = ["fontFamily","fontSize","textColor","outlineColor","outlineThickness","verticalPosition","alignment","verticalMargin","wordsPerLine"];
+    fields.forEach(function(f) {
+      var el = document.getElementById("cf-" + f) || document.getElementById("ch-" + f);
+      if (!el) return;
+      if (el.tagName === "INPUT" && el.type === "number") el.value = capSettings[f];
+      else if (el.tagName === "INPUT" && el.type === "color") {
+        el.value = capSettings[f];
+        var swatch = document.getElementById("cs-" + f);
+        if (swatch) swatch.style.background = capSettings[f];
+      } else if (el.tagName === "SELECT") el.value = capSettings[f];
+    });
+    // Update font buttons
+    document.querySelectorAll(".cap-font-btn").forEach(function(b) {
+      b.classList.toggle("active", b.dataset.font === capSettings.fontFamily);
+    });
+  }
+
+  function renderFontScroll() {
+    var el = document.getElementById("cap-font-scroll");
+    if (!el) return;
+    el.innerHTML = CAP_FONTS.map(function(f) {
+      return '<button class="cap-font-btn' + (f.id === capSettings.fontFamily ? ' active' : '') +
+             '" data-font="' + f.id + '" style="font-family:\'' + f.id + '\',sans-serif;font-weight:' + f.weight + '"' +
+             ' onclick="selectCapFont(\'' + f.id + '\')">' + f.label + '</button>';
+    }).join("");
+  }
+
+  function selectCapFont(fontId) {
+    capSettings.fontFamily = fontId;
+    document.querySelectorAll(".cap-font-btn").forEach(function(b) {
+      b.classList.toggle("active", b.dataset.font === fontId);
+    });
+    updatePhonePreview();
+  }
+
+  function toggleCaptionInline() {
+    var el = document.getElementById("caption-inline");
+    var wasOpen = el.classList.contains("open");
+    el.classList.toggle("open");
+    if (!wasOpen) {
+      setTimeout(updatePhonePreview, 50);
+    }
+  }
+
+  function toggleCapEnabled() {
+    capSettings.enabled = !capSettings.enabled;
+    var btn = document.getElementById("cap-toggle");
+    var label = document.getElementById("cap-toggle-label");
+    var badge = document.getElementById("cap-badge");
+    btn.classList.toggle("on", capSettings.enabled);
+    label.textContent = capSettings.enabled ? "Субтитры включены" : "Субтитры выключены";
+    badge.textContent = capSettings.enabled ? "ВКЛ" : "ВЫКЛ";
+    badge.classList.toggle("off", !capSettings.enabled);
+    updatePhonePreview();
+  }
+
+  function capInlineSet(key, value) {
+    capSettings[key] = value;
+  }
+
+  // ── Phone Preview ─────────────────────────────────────────────────────────────
+  const PHONE_SAMPLE_LINES = [
+    "🚀 SpaceX just launched",
+    "their biggest rocket yet!",
+    "It reached orbit in record",
+    "time and everyone watched.",
+  ];
+
+  const PHONE_BG_FRAMES = [
+    // Each is a small data-URL or gradient CSS
+    "linear-gradient(160deg, #0f0c29, #302b63 50%, #24243e)",
+    "linear-gradient(135deg, #1a1a2e, #16213e 50%, #0f3460)",
+    "linear-gradient(160deg, #2c3e50, #4ca1af)",
+    "linear-gradient(135deg, #0f0c29, #302b63 40%, #764ba2)",
+  ];
+  let phoneBgIdx = 0;
+
+  function updatePhonePreview() {
+    var canvas = document.getElementById("phone-canvas");
+    if (!canvas) return;
+    var ctx = canvas.getContext("2d");
+    // Canvas is 196x382 in the DOM (scaled via CSS), use actual canvas size
+    var cw = 196, ch = 382;
+
+    // Background — cycle gradient
+    var grad = ctx.createLinearGradient(0, 0, cw, ch);
+    var hues = [
+      { o: 0, c: "#0f0c29" }, { o: 0.5, c: "#302b63" }, { o: 1, c: "#24243e" },
+    ];
+    grad = ctx.createLinearGradient(0, 0, cw, ch);
+    grad.addColorStop(0, "#0f0c29");
+    grad.addColorStop(0.5, "#302b63");
+    grad.addColorStop(1, "#24243e");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, cw, ch);
+
+    // Draw some abstract "scene" — circles simulating image content
+    ctx.save();
+    ctx.globalAlpha = 0.18;
+    ctx.fillStyle = "#764ba2";
+    ctx.beginPath();
+    ctx.arc(cw * 0.7, ch * 0.3, cw * 0.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#f5576c";
+    ctx.beginPath();
+    ctx.arc(cw * 0.2, ch * 0.7, cw * 0.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#fda085";
+    ctx.beginPath();
+    ctx.arc(cw * 0.6, ch * 0.65, cw * 0.25, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // Caption zone
+    var zone = document.getElementById("phone-caption-zone");
+    var capEnabled = capSettings.enabled;
+    var textEl = document.getElementById("phone-caption-text");
+
+    zone.className = "phone-caption-zone " + capSettings.verticalPosition;
+
+    if (!capEnabled) {
+      textEl.style.display = "none";
+      return;
+    }
+    textEl.style.display = "";
+
+    // Wrap text by wordsPerLine
+    var wordsPerLine = capSettings.wordsPerLine || 6;
+    var sampleText = capSettings._sampleText || {
+      ru: "🚀 SpaceX только что запустила самую большую ракету и все смотрели в восхищении!",
+      en: "🚀 SpaceX just launched their biggest rocket and everyone watched in awe!",
+      es: "🚀 SpaceX acaba de lanzar su cohete más grande y todos lo observaban con asombro!",
+      fr: "🚀 SpaceX vient de lancer sa plus grande fusée et tout le monde observait avec émerveillement!",
+      de: "🚀 SpaceX hat gerade die größte Rakete gestartet und alle sahen voller Staunen zu!",
+      zh: "🚀 SpaceX刚刚发射了最大的火箭，所有人都惊叹不已！",
+      ar: "🚀 أطلقت سبيس إكس أكبر صاروخ على الإطلاق والجميع يتابع بدهشة!",
+      pt: "🚀 SpaceX acabou de lançar o maior foguete e todos assistiam com espanto!",
+      hi: "🚀 SpaceX ने अपना सबसे बड़ा रॉकेट लॉन्च किया और सबने हक्का-बक्का देखा!",
+      ja: "🚀 SpaceXが最大のロケットを打ち上げました。誰もが惊叹しています！",
+    }[state.lang] || "🚀 SpaceX just launched their biggest rocket and everyone watched in awe!";
+    var words = sampleText.split(" ");
+    var lines = [];
+    for (var i = 0; i < words.length; i += wordsPerLine) {
+      lines.push(words.slice(i, i + wordsPerLine).join(" "));
+    }
+
+    var fontSize = Math.round((capSettings.fontSize || 36) * 0.42);
+    fontSize = Math.max(6, Math.min(18, fontSize));
+
+    var textColor = capSettings.textColor || "#FFFFFF";
+    var outlineColor = capSettings.outlineColor || "#000000";
+    var outlineThickness = capSettings.outlineThickness || 4;
+    var alignment = capSettings.alignment || "center";
+
+    // Measure lines
+    ctx.font = "bold " + fontSize + "px '" + (capSettings.fontFamily || "Montserrat") + "', sans-serif";
+    var lineH = Math.round(fontSize * 1.35);
+    var maxW = cw * 0.88;
+    var totalH = lines.length * lineH;
+    var padY = Math.round(fontSize * 0.5);
+
+    // Calculate Y
+    var vPos = capSettings.verticalPosition;
+    var vMargin = Math.round((capSettings.verticalMargin || 60) * (ch / 382));
+    var zoneH = totalH + padY * 2;
+    var capY;
+    if (vPos === "top") capY = vMargin;
+    else if (vPos === "middle") capY = (ch - zoneH) / 2;
+    else capY = ch - vMargin - zoneH;
+
+    // Semi-transparent background bar
+    ctx.fillStyle = "rgba(0,0,0,0.65)";
+    ctx.fillRect(0, capY, cw, zoneH);
+
+    // Draw each line
+    var ty = capY + padY;
+    for (var li = 0; li < lines.length; li++) {
+      var lineText = lines[li];
+      var tw = ctx.measureText(lineText).width;
+      var tx;
+      if (alignment === "left") tx = cw * 0.06;
+      else if (alignment === "right") tx = cw * 0.94 - tw;
+      else tx = (cw - tw) / 2;
+
+      // Outline
+      if (outlineThickness > 0) {
+        ctx.save();
+        ctx.strokeStyle = outlineColor;
+        ctx.lineWidth = Math.min(outlineThickness * 0.6, 4);
+        ctx.lineJoin = "round";
+        ctx.strokeText(lineText, tx, ty);
+        ctx.restore();
+      }
+
+      // Text
+      ctx.fillStyle = textColor;
+      ctx.fillText(lineText, tx, ty);
+      ty += lineH;
+    }
+  }
+
+  function capInlineColor(key, value) {
+    capSettings[key] = value;
+    var swatch = document.getElementById("cs-" + key);
+    if (swatch) swatch.style.background = value;
+    var hex = document.getElementById("ch-" + key);
+    if (hex) hex.value = value;
+  }
+
+  function capInlineHex(key, value) {
+    if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
+      capSettings[key] = value;
+      var swatch = document.getElementById("cs-" + key);
+      if (swatch) { swatch.style.background = value; swatch.querySelector("input").value = value; }
+    }
+  }
+
+  // ── Caption Modal (post-generation) ──────────────────────────────────────────
+
+  const DEFAULT_CAPTION_SETTINGS = {
+    enabled: true,
+    fontSize: 44,
+    textColor: "#FFFFFF",
+    highlightColor: "#FFFF00",
+    outlineColor: "#000000",
+    outlineThickness: 4,
+    verticalPosition: "bottom",
+    alignment: "center",
+    wordsPerCaption: 3,
+    leftMargin: 30,
+    rightMargin: 30,
+    verticalMargin: 0,
+    previewBg: "#0a0a0a",
+  };
+
+  let captionSettings = Object.assign({}, DEFAULT_CAPTION_SETTINGS);
+
+  function openCaptionModal() {
+    renderCaptionModal();
+    document.getElementById("caption-modal-overlay").classList.add("show");
+    updateCaptionPreview();
+  }
+
+  function closeCaptionModal() {
+    document.getElementById("caption-modal-overlay").classList.remove("show");
+  }
+
+  function renderCaptionModal() {
+    var cs = captionSettings;
+    var vertOptions = [
+      { id: "top",    label: "Top" },
+      { id: "middle", label: "Default (Middle)" },
+      { id: "bottom", label: "Bottom" },
+    ];
+    var alignOptions = [
+      { id: "center", label: "Default (Middle Center (Alt))" },
+      { id: "left",   label: "Left" },
+      { id: "right",  label: "Right" },
+    ];
+    document.getElementById("caption-modal-overlay").innerHTML = `
+      <div class="caption-modal">
+        <button class="caption-close" onclick="closeCaptionModal()">✕</button>
+        <div class="caption-modal-title">Configure Captions</div>
+
+        <!-- Toggle -->
+        <div class="caption-toggle-row">
+          <button class="caption-toggle ${cs.enabled ? 'on' : ''}" id="caption-toggle-btn" onclick="toggleCaptions()"></button>
+          <span class="caption-toggle-label">Captions ${cs.enabled ? 'On' : 'Off'}</span>
+        </div>
+
+        <div class="caption-grid">
+          <div class="caption-left">
+            <!-- Row 1 -->
+            <div class="caption-fields-grid">
+              <div class="caption-field">
+                <label>Font Size (px) ⓘ</label>
+                <input type="number" id="cap-fontSize" value="${cs.fontSize}" min="12" max="120" oninput="capSet('fontSize', +this.value); updateCaptionPreview()">
+              </div>
+              <div class="caption-field">
+                <label>Text Color ⓘ</label>
+                <div class="caption-color-row">
+                  <div class="caption-color-swatch" style="background:${cs.textColor}">
+                    <input type="color" id="cap-textColor" value="${cs.textColor}" oninput="capSetColor('textColor', this.value)">
+                  </div>
+                  <input class="caption-color-hex" id="cap-textColor-hex" value="${cs.textColor}" oninput="capSetColorHex('textColor', this.value)">
+                </div>
+              </div>
+              <div class="caption-field">
+                <label>Highlight Color ⓘ</label>
+                <div class="caption-color-row">
+                  <div class="caption-color-swatch" style="background:${cs.highlightColor}">
+                    <input type="color" id="cap-highlightColor" value="${cs.highlightColor}" oninput="capSetColor('highlightColor', this.value)">
+                  </div>
+                  <input class="caption-color-hex" id="cap-highlightColor-hex" value="${cs.highlightColor}" oninput="capSetColorHex('highlightColor', this.value)">
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 2 -->
+            <div class="caption-fields-grid">
+              <div class="caption-field">
+                <label>Outline Color ⓘ</label>
+                <div class="caption-color-row">
+                  <div class="caption-color-swatch" style="background:${cs.outlineColor}">
+                    <input type="color" id="cap-outlineColor" value="${cs.outlineColor}" oninput="capSetColor('outlineColor', this.value)">
+                  </div>
+                  <input class="caption-color-hex" id="cap-outlineColor-hex" value="${cs.outlineColor}" oninput="capSetColorHex('outlineColor', this.value)">
+                </div>
+              </div>
+              <div class="caption-field">
+                <label>Outline Thickness (px) ⓘ</label>
+                <input type="number" id="cap-outlineThickness" value="${cs.outlineThickness}" min="0" max="20" oninput="capSet('outlineThickness', +this.value); updateCaptionPreview()">
+              </div>
+              <div class="caption-field">
+                <label>Vertical Position ⓘ</label>
+                <select id="cap-verticalPosition" onchange="capSet('verticalPosition', this.value); updateCaptionPreview()">
+                  ${vertOptions.map(function(o){ return '<option value="'+o.id+'"'+(cs.verticalPosition===o.id?' selected':'')+'>'+o.label+'</option>'; }).join("")}
+                </select>
+              </div>
+            </div>
+
+            <!-- Row 3 -->
+            <div class="caption-fields-grid">
+              <div class="caption-field">
+                <label>Alignment ⓘ</label>
+                <select id="cap-alignment" onchange="capSet('alignment', this.value); updateCaptionPreview()">
+                  ${alignOptions.map(function(o){ return '<option value="'+o.id+'"'+(cs.alignment===o.id?' selected':'')+'>'+o.label+'</option>'; }).join("")}
+                </select>
+              </div>
+              <div class="caption-field">
+                <label>Words Per Caption ⓘ</label>
+                <input type="number" id="cap-wordsPerCaption" value="${cs.wordsPerCaption}" min="1" max="20" oninput="capSet('wordsPerCaption', +this.value)">
+              </div>
+              <div class="caption-field">
+                <label>Left Margin (px) ⓘ</label>
+                <input type="number" id="cap-leftMargin" value="${cs.leftMargin}" min="0" max="500" oninput="capSet('leftMargin', +this.value)">
+              </div>
+            </div>
+
+            <!-- Row 4 -->
+            <div class="caption-fields-grid">
+              <div class="caption-field">
+                <label>Right Margin (px) ⓘ</label>
+                <input type="number" id="cap-rightMargin" value="${cs.rightMargin}" min="0" max="500" oninput="capSet('rightMargin', +this.value)">
+              </div>
+              <div class="caption-field">
+                <label>Vertical Margin (px) ⓘ</label>
+                <input type="number" id="cap-verticalMargin" value="${cs.verticalMargin}" min="0" max="500" oninput="capSet('verticalMargin', +this.value)">
+              </div>
+              <div class="caption-field">
+                <label>Preview Background ⓘ</label>
+                <div class="caption-color-row">
+                  <div class="caption-color-swatch" style="background:${cs.previewBg}">
+                    <input type="color" id="cap-previewBg" value="${cs.previewBg}" oninput="capSetColor('previewBg', this.value)">
+                  </div>
+                  <input class="caption-color-hex" id="cap-previewBg-hex" value="${cs.previewBg}" oninput="capSetColorHex('previewBg', this.value)">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Preview -->
+          <div class="caption-preview-wrap">
+            <div class="caption-preview-label">👁 Live Preview</div>
+            <div class="caption-phone" id="caption-phone">
+              <div class="caption-phone-notch"></div>
+              <div class="caption-preview-text-wrap" id="caption-preview-text-wrap">
+                <span id="caption-preview-text">Your <span id="caption-highlight-word" style="color:#FFFF00">caption</span> preview</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="caption-modal-actions">
+          <button class="caption-btn-save" onclick="saveCaptionSettings()">💾 Save Settings</button>
+          <button class="caption-btn-preview-text" onclick="cycleCaptionPreviewText()">📝 Preview Text</button>
+          <button class="caption-btn-reset" onclick="resetCaptionSettings()">↩ Reset to System Defaults</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function capSet(key, value) {
+    captionSettings[key] = value;
+  }
+
+  function capSetColor(key, value) {
+    captionSettings[key] = value;
+    var swatch = document.querySelector('[id="cap-' + key + '"]')?.closest('.caption-color-swatch');
+    if (swatch) swatch.style.background = value;
+    var hex = document.getElementById('cap-' + key + '-hex');
+    if (hex) hex.value = value;
+    updateCaptionPreview();
+  }
+
+  function capSetColorHex(key, value) {
+    if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
+      captionSettings[key] = value;
+      var swatch = document.querySelector('[id="cap-' + key + '"]');
+      if (swatch) swatch.value = value;
+      var swatchWrap = swatch?.closest('.caption-color-swatch');
+      if (swatchWrap) swatchWrap.style.background = value;
+      updateCaptionPreview();
+    }
+  }
+
+  function toggleCaptions() {
+    captionSettings.enabled = !captionSettings.enabled;
+    var btn = document.getElementById("caption-toggle-btn");
+    var label = btn.nextElementSibling;
+    btn.classList.toggle("on", captionSettings.enabled);
+    label.textContent = "Captions " + (captionSettings.enabled ? "On" : "Off");
+    updateCaptionPreview();
+  }
+
+  var captionPreviewTexts = [
+    ["Your", "caption", "preview"],
+    ["Этот", "текст", "субтитров"],
+    ["Amazing", "video", "content"],
+    ["Невероятная", "история", "начинается"],
+  ];
+  var captionPreviewIdx = 0;
+
+  function cycleCaptionPreviewText() {
+    captionPreviewIdx = (captionPreviewIdx + 1) % captionPreviewTexts.length;
+    updateCaptionPreview();
+  }
+
+  function updateCaptionPreview() {
+    var cs = captionSettings;
+    var phone = document.getElementById("caption-phone");
+    var textWrap = document.getElementById("caption-preview-text-wrap");
+    var text = document.getElementById("caption-preview-text");
+    var highlight = document.getElementById("caption-highlight-word");
+    if (!phone || !text) return;
+
+    // Background
+    phone.style.background = cs.previewBg;
+
+    // Position text vertically
+    phone.style.alignItems = cs.verticalPosition === "top" ? "flex-start"
+                           : cs.verticalPosition === "middle" ? "center"
+                           : "flex-end";
+    phone.style.paddingTop = cs.verticalPosition === "top" ? "40px" : "0";
+    phone.style.paddingBottom = cs.verticalPosition !== "top" ? "20px" : "0";
+
+    // Text styles
+    var words = captionPreviewTexts[captionPreviewIdx];
+    text.style.fontSize = Math.max(10, Math.round(cs.fontSize * 0.35)) + "px";
+    text.style.color = cs.enabled ? cs.textColor : "#888";
+    text.style.textAlign = cs.alignment;
+    text.style.textShadow = cs.enabled && cs.outlineThickness > 0
+      ? `${cs.outlineThickness * 0.3}px ${cs.outlineThickness * 0.3}px 0 ${cs.outlineColor},
+         -${cs.outlineThickness * 0.3}px -${cs.outlineThickness * 0.3}px 0 ${cs.outlineColor}`
+      : "none";
+
+    textWrap.style.textAlign = cs.alignment;
+    textWrap.style.paddingLeft = Math.round(cs.leftMargin * 0.2) + "px";
+    textWrap.style.paddingRight = Math.round(cs.rightMargin * 0.2) + "px";
+
+    if (highlight) highlight.style.color = cs.enabled ? cs.highlightColor : "#888";
+
+    text.innerHTML = words[0] + ' <span id="caption-highlight-word" style="color:' + (cs.enabled ? cs.highlightColor : '#888') + '">' + words[1] + '</span> ' + words[2];
+  }
+
+  function saveCaptionSettings() {
+    closeCaptionModal();
+    // Show saved toast
+    var toast = document.createElement("div");
+    toast.style.cssText = "position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#22c55e;color:#fff;padding:12px 24px;border-radius:12px;font-weight:600;z-index:9999;font-size:14px;";
+    toast.textContent = "✅ Настройки субтитров сохранены";
+    document.body.appendChild(toast);
+    setTimeout(function(){ document.body.removeChild(toast); }, 2500);
+  }
+
+  function resetCaptionSettings() {
+    captionSettings = Object.assign({}, DEFAULT_CAPTION_SETTINGS);
+    renderCaptionModal();
+    updateCaptionPreview();
+  }
+
+</script>
+</body>
+</html>

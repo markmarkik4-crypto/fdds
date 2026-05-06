@@ -1,0 +1,23 @@
+{
+  "name": "telegram-image-bot",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node scripts/start-services.mjs",
+    "start:bot": "node --env-file=.env bot.js",
+    "start:web": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@huggingface/inference": "^4.13.15",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.1",
+    "express": "^5.2.1",
+    "node-telegram-bot-api": "^0.67.0",
+    "openai": "^6.33.0"
+  }
+}

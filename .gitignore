@@ -1,0 +1,9 @@
+.env
+node_modules
+client/node_modules
+client/dist
+videos
+logs
+.DS_Store
+.ruff_cache
+*.log

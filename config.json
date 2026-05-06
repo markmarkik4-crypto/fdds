@@ -1,0 +1,245 @@
+{
+  "langs": [
+    { "id": "ru", "label": "🇷🇺 Русский" },
+    { "id": "en", "label": "🇬🇧 English" },
+    { "id": "uk", "label": "🇺🇦 Українська" },
+    { "id": "es", "label": "🇪🇸 Español" },
+    { "id": "de", "label": "🇩🇪 Deutsch" },
+    { "id": "fr", "label": "🇫🇷 Français" },
+    { "id": "ar", "label": "🇸🇦 العربية" },
+    { "id": "zh", "label": "🇨🇳 中文" },
+    { "id": "ja", "label": "🇯🇵 日本語" },
+    { "id": "ko", "label": "🇰🇷 한국어" },
+    { "id": "pt", "label": "🇧🇷 Português" }
+  ],
+  "formats": [
+    { "id": "9:16", "label": "9:16", "desc": "Вертикальное (TikTok, Reels)" },
+    { "id": "16:9", "label": "16:9", "desc": "Горизонтальное (YouTube)" },
+    { "id": "1:1", "label": "1:1", "desc": "Квадратное (Instagram)" }
+  ],
+  "durations": [
+    { "id": 30, "label": "30 сек", "sub": "Быстрое" },
+    { "id": 60, "label": "60 сек", "sub": "Стандарт" },
+    { "id": 90, "label": "90 сек", "sub": "Подробное" },
+    { "id": 120, "label": "120 сек", "sub": "Длинное" }
+  ],
+  "themes": [
+    {
+      "id": "military",
+      "label": "⚔️ Военное",
+      "emoji": "⚔️",
+      "subtopics": [
+        { "id": "great_patriotic", "label": "Великая Отечественная война", "desc": "1941-1945, СССР vs Нацистская Германия" },
+        { "id": "ww2", "label": "Вторая мировая", "desc": "Глобальный конфликт 1939-1945" },
+        { "id": "ancient_wars", "label": "Древние войны", "desc": "Рим, Греция, Карфаген" },
+        { "id": "napoleonic", "label": "Наполеоновские войны", "desc": "Европа 1803-1815" },
+        { "id": "modern_conflicts", "label": "Современные конфликты", "desc": "С 1990-х годов до наших дней" },
+        { "id": "civil_wars", "label": "Гражданские войны", "desc": "Брат против брата" },
+        { "id": "naval_battles", "label": "Морские сражения", "desc": "Корабли, подлодки, авианосцы" },
+        { "id": "air_warfare", "label": "Воздушная война", "desc": "Авиация и стратегические бомбардировки" }
+      ]
+    },
+    {
+      "id": "history",
+      "label": "🏛️ История",
+      "emoji": "🏛️",
+      "subtopics": [
+        { "id": "ancient_civilizations", "label": "Древние цивилизации", "desc": "Египет, Месопотамия, Индия, Китай" },
+        { "id": "middle_ages", "label": "Средневековье", "desc": "Рыцари, замки, крестоносцы" },
+        { "id": "renaissance", "label": "Эпоха Возрождения", "desc": "Искусство, наука, великие мастера" },
+        { "id": "world超级大国", "label": "Империи и сверхдержавы", "desc": "Рим, Монголия, Британская империя" },
+        { "id": "revolutions", "label": "Революции", "desc": "Французская, Октябрьская, Американская" },
+        { "id": "cold_war", "label": "Холодная война", "desc": "СССР vs США, 1947-1991" },
+        { "id": "explorers", "label": "Великие путешественники", "desc": "Открытие новых земель" }
+      ]
+    },
+    {
+      "id": "science",
+      "label": "🔬 Наука",
+      "emoji": "🔬",
+      "subtopics": [
+        { "id": "physics", "label": "Физика", "desc": "Квантовая механика, относительность" },
+        { "id": "biology", "label": "Биология", "desc": "Эволюция, генетика, ДНК" },
+        { "id": "space", "label": "Космос", "desc": "Планеты, звёзды, чёрные дыры" },
+        { "id": "technology", "label": "Технологии", "desc": "Изобретения, которые изменили мир" },
+        { "id": "medicine", "label": "Медицина", "desc": "Открытия, эпидемии, вакцины" },
+        { "id": "ai", "label": "Искусственный интеллект", "desc": "Нейросети, машинное обучение" },
+        { "id": "earth_science", "label": "Наука о Земле", "desc": "Геология, климат, океаны" }
+      ]
+    },
+    {
+      "id": "nature",
+      "label": "🌿 Природа",
+      "emoji": "🌿",
+      "subtopics": [
+        { "id": "animals", "label": "Животные", "desc": "Хищники, древние существа, миграции" },
+        { "id": "extinct_animals", "label": "Вымершие существа", "desc": "Динозавры, мамонты, мегафауна" },
+        { "id": "predators", "label": "Хищники", "desc": "Львы, волки, акулы — охотники" },
+        { "id": "ocean", "label": "Океан", "desc": "Глубины, кораллы, морские чудовища" },
+        { "id": "jungle", "label": "Джунгли", "desc": "Тропические леса, экосистемы" },
+        { "id": "arctic", "label": "Арктика и Антарктика", "desc": "Полюса, ледники, белые медведи" },
+        { "id": "catastrophes", "label": "Природные катастрофы", "desc": "Извержения, цунами, землетрясения" }
+      ]
+    },
+    {
+      "id": "space",
+      "label": "🚀 Космос",
+      "emoji": "🚀",
+      "subtopics": [
+        { "id": "planets", "label": "Планеты", "desc": "Марс, Юпитер, экзопланеты" },
+        { "id": "black_holes", "label": "Чёрные дыры", "desc": "Сингулярности, Event Horizon" },
+        { "id": "space_missions", "label": "Космические миссии", "desc": "Apollo, Curiosity, James Webb" },
+        { "id": "aliens", "label": "Внеземная жизнь", "desc": "Учёные ищут жизнь в космосе" },
+        { "id": "universe_origin", "label": "Происхождение Вселенной", "desc": "Большой взрыв, тёмная материя" },
+        { "id": "asteroids", "label": "Астероиды и кометы", "desc": "Угроза из космоса" }
+      ]
+    },
+    {
+      "id": "crime",
+      "label": "🔪 Криминал",
+      "emoji": "🔪",
+      "subtopics": [
+        { "id": "serial_killers", "label": "Серийные убийцы", "desc": "Самые известные маньяки в истории" },
+        { "id": "heists", "label": "Ограбления", "desc": "Дерзкие налёты, бриллианты" },
+        { "id": "gangs", "label": "Банды и мафия", "desc": "Крёстный отец, русская мафия" },
+        { "id": "investigations", "label": "Расследования", "desc": "Нераскрытые дела, детективы" },
+        { "id": "spy", "label": "Шпионаж", "desc": "CIA, КГБ, тайные операции" },
+        { "id": "trials", "label": "Суды и приговоры", "desc": "Громкие процессы, правосудие" }
+      ]
+    },
+    {
+      "id": "mystery",
+      "label": "🔮 Тайны",
+      "emoji": "🔮",
+      "subtopics": [
+        { "id": "ancient_mysteries", "label": "Древние тайны", "desc": "Пирамиды, Стоунхендж, Баальбек" },
+        { "id": "disappearances", "label": "Загадочные исчезновения", "desc": "Бермудский треугольник, Малабар" },
+        { "id": "conspiracies", "label": "Теории заговора", "desc": "Лунный заговор, скрытая правда" },
+        { "id": "paranormal", "label": "Паранормальное", "desc": "Призраки, НЛО, необъяснимое" },
+        { "id": "lost_treasures", "label": "Потерянные сокровища", "desc": "Клад пиратов, золото инков" },
+        { "id": "secrets", "label": "Государственные секреты", "desc": "Засекреченные документы, архивы" }
+      ]
+    },
+    {
+      "id": "horror",
+      "label": "👻 Ужасы",
+      "emoji": "👻",
+      "subtopics": [
+        { "id": "creepypasta", "label": "Слендермен и другие", "desc": "Интернет-хорроры, creepypasta" },
+        { "id": "haunted_places", "label": "Заброшенные места", "desc": "Отели, госпитали, замки" },
+        { "id": "monsters", "label": "Чудовища", "desc": "Снежный человек, водяной, упыри" },
+        { "id": "rituals", "label": "Ритуалы", "desc": "Сатанинские культы, спиритизм" },
+        { "id": "curses", "label": "Проклятия", "desc": "Мумия, кольцо, кровь" },
+        { "id": "zombies", "label": "Зомби и эпидемии", "desc": "Вирус, живые мертвецы" }
+      ]
+    },
+    {
+      "id": "adventure",
+      "label": "🗺️ Приключения",
+      "emoji": "🗺️",
+      "subtopics": [
+        { "id": "survival", "label": "Выживание", "desc": "Дикая природа, остров, экстремальные условия" },
+        { "id": "treasure_hunters", "label": "Кладоискатели", "desc": "Охотники за сокровищами" },
+        { "id": "pirates", "label": "Пиратские приключения", "desc": "Флибустьеры, Карибы, сокровища" },
+        { "id": "expeditions", "label": "Экспедиции", "desc": "Полюса, горы, неизведанные территории" },
+        { "id": "island", "label": "Островные истории", "desc": "Затерянные миры, эксперименты" },
+        { "id": "underground", "label": "Подземелья и пещеры", "desc": "Метро, бункеры, подземные города" }
+      ]
+    },
+    {
+      "id": "biography",
+      "label": "👤 Биографии",
+      "emoji": "👤",
+      "subtopics": [
+        { "id": "dictators", "label": "Диктаторы", "desc": "Гитлер, Сталин, Наполеон" },
+        { "id": "inventors", "label": "Изобретатели", "desc": "Тесла, Эдисон, Джобс" },
+        { "id": "scientists_bio", "label": "Учёные", "desc": "Эйнштейн, Ньютон, Дарвин" },
+        { "id": "artists", "label": "Художники и музыканты", "desc": "Ван Гог, Моцарт, Da Vinci" },
+        { "id": "explorers_bio", "label": "Путешественники", "desc": "Колумб, Магеллан, Амундсен" },
+        { "id": "gangsters", "label": "Гангстеры", "desc": "Капоне, русские ворошилы" },
+        { "id": "heroes", "label": "Герои и легенды", "desc": "Супермены, Робин Гуд" }
+      ]
+    },
+    {
+      "id": "health",
+      "label": "💊 Здоровье",
+      "emoji": "💊",
+      "subtopics": [
+        { "id": " longevity", "label": "Долголетие", "desc": "Синие зоны, секреты 100-летних" },
+        { "id": "brain", "label": "Мозг и память", "desc": "Нейропластичность, Альцгеймер" },
+        { "id": "body_hacks", "label": "Лайфхаки для тела", "desc": "Сон, питание, спорт" },
+        { "id": "pandemics", "label": "Пандемии", "desc": "Испанка, COVID, чума" },
+        { "id": "addictions", "label": "Зависимости", "desc": "Алкоголь, наркотики, технозависимость" },
+        { "id": "superfoods", "label": "Суперфуды", "desc": "Продукты, продлевающие жизнь" }
+      ]
+    },
+    {
+      "id": "finance",
+      "label": "💰 Финансы",
+      "emoji": "💰",
+      "subtopics": [
+        { "id": "investing", "label": "Инвестиции", "desc": "Акции, облигации, крипта" },
+        { "id": "scams", "label": "Аферы и мошенничество", "desc": "Бернард Мэдофф, финансовые пирамиды" },
+        { "id": "rich_people", "label": "Богатейшие люди", "desc": "Маск, Безос, Ротшильды" },
+        { "id": "crashes", "label": "Экономические кризисы", "desc": "1929, 2008, обвалы" },
+        { "id": "business_cases", "label": "Бизнес-кейсы", "desc": "Успехи и провалы компаний" },
+        { "id": "side_money", "label": "Как заработать", "desc": "Пассивный доход, стартапы" }
+      ]
+    }
+  ],
+  "storyStyles": [
+    { "id": "intrigue", "label": "🔺 Интрига", "emoji": "🔺", "desc": "Нарастающее напряжение, неожиданные повороты" },
+    { "id": "mystery", "label": "🔍 Детектив", "emoji": "🔍", "desc": "Загадка в начале, разгадка в конце" },
+    { "id": "shock", "label": "💥 Шок", "emoji": "💥", "desc": "Невероятные факты, разрушение стереотипов" },
+    { "id": "mystic", "label": "🌙 Мистика", "emoji": "🌙", "desc": "Атмосфера тайны, сверхъестественное" },
+    { "id": "paradox", "label": "🌀 Парадокс", "emoji": "🌀", "desc": "Противоречия, которые меняют мышление" },
+    { "id": "cliffhanger", "label": "🎬 Клиффхэнгер", "emoji": "🎬", "desc": "Каждый кадр заканчивается на интриге" },
+    { "id": "horror", "label": "👹 Ужас", "emoji": "👹", "desc": "Страх, напряжение, жуть" },
+    { "id": "adventure", "label": "🏴‍☠️ Приключение", "emoji": "🏴‍☠️", "desc": "Действие, риск, адреналин" }
+  ],
+  "styles": [
+    { "id": "cinematic", "label": "🎬 Кинематограф", "desc": "Кинематографическое кино", "color": "#6366f1" },
+    { "id": "anime", "label": "🎌 Аниме", "desc": "Японская анимация", "color": "#ec4899" },
+    { "id": "fantasy", "label": "🧙 Фэнтези", "desc": "Волшебство и магия", "color": "#8b5cf6" },
+    { "id": "horror_style", "label": "👹 Хоррор", "desc": "Тёмный и пугающий стиль", "color": "#dc2626" },
+    { "id": "documentary", "label": "📽️ Документальный", "desc": "Реалистичная съёмка", "color": "#65a30d" },
+    { "id": "photography", "label": "📷 Фотография", "desc": "Реалистичные фото", "color": "#f59e0b" },
+    { "id": "3d", "label": "🎮 3D", "desc": "Трёхмерная графика", "color": "#06b6d4" },
+    { "id": "moody", "label": "🌑 Тёмный", "desc": "Мрачная атмосфера", "color": "#1f2937" },
+    { "id": "retro", "label": "📺 Ретро", "desc": "Стиль 80-90-х", "color": "#f97316" },
+    { "id": "comic", "label": "💬 Комикс", "desc": "Стиль комиксов", "color": "#eab308" },
+    { "id": "sci-fi", "label": "🚀 Sci-Fi", "desc": "Научная фантастика", "color": "#3b82f6" }
+  ],
+  "music": [
+    { "id": "none", "label": "Без музыки", "genre": "none" },
+    { "id": "cinematic-rise", "label": "🎬 Кинематограф", "genre": "Cinematic" },
+    { "id": "epic-journey", "label": "🏔️ Эпик", "genre": "Epic" },
+    { "id": "dark-ambient", "label": "🌫️ Эмбиент", "genre": "Ambient" },
+    { "id": "mislaid-fear", "label": "👻 Хоррор", "genre": "Dark" },
+    { "id": "adventure-theme", "label": "🧭 Приключение", "genre": "Upbeat" },
+    { "id": "dramatic-tension", "label": "💥 Драма", "genre": "Dramatic" },
+    { "id": "mystery-noir", "label": "🔮 Тайна", "genre": "Dark" },
+    { "id": "chill-atmosphere", "label": "😌 Чилл", "genre": "Chill" },
+    { "id": "motivational", "label": "☀️ Вдохновляющая", "genre": "Upbeat" },
+    { "id": "emotional-piano", "label": "😢 Грустная", "genre": "Classical" },
+    { "id": "corporate-inspire", "label": "💼 Корпоративная", "genre": "Corporate" },
+    { "id": "retro-synth", "label": "📼 Ретро", "genre": "Synthwave" },
+    { "id": "lo-fi-beats", "label": "🎧 Lo-Fi", "genre": "Lo-Fi" },
+    { "id": "orchestral-epic", "label": "🎻 Оркестровая", "genre": "Classical" }
+  ],
+  "voices": [
+    { "id": "alloy", "label": "Alloy", "desc": "Нейтральный мужской", "gender": "м", "engine": "openai" },
+    { "id": "echo", "label": "Echo", "desc": "Мягкий мужской", "gender": "м", "engine": "openai" },
+    { "id": "fable", "label": "Fable", "desc": "Британский мужской", "gender": "м", "engine": "openai" },
+    { "id": "onyx", "label": "Onyx", "desc": "Глубокий мужской", "gender": "м", "engine": "openai" },
+    { "id": "nova", "label": "Nova", "desc": "Яркий женский", "gender": "ж", "engine": "openai" },
+    { "id": "shimmer", "label": "Shimmer", "desc": "Мягкий женский", "gender": "ж", "engine": "openai" },
+    { "id": "edge_ru-RU-DmitryNeural", "label": "🇷🇺 Dmitry", "desc": "Русский мужской (Neural)", "gender": "м", "engine": "edge", "lang": "ru" },
+    { "id": "edge_ru-RU-SvetlanaNeural", "label": "🇷🇺 Svetlana", "desc": "Русский женский (Neural)", "gender": "ж", "engine": "edge", "lang": "ru" },
+    { "id": "edge_uk-UA-PolinaNeural", "label": "🇺🇦 Polina", "desc": "Украинский женский", "gender": "ж", "engine": "edge", "lang": "uk" },
+    { "id": "edge_en-US-JennyNeural", "label": "🇬🇧 Jenny", "desc": "Английский женский", "gender": "ж", "engine": "edge", "lang": "en" },
+    { "id": "edge_en-GB-SoniaNeural", "label": "🇬🇧 Sonia", "desc": "Британский женский", "gender": "ж", "engine": "edge", "lang": "en" },
+    { "id": "gtts_ru", "label": "🇷🇺 Google TTS (RU)", "desc": "Русский (Google)", "gender": "ж", "engine": "gtts", "lang": "ru" },
+    { "id": "gtts_en", "label": "🇬🇧 Google TTS (EN)", "desc": "Английский (Google)", "gender": "ж", "engine": "gtts", "lang": "en" }
+  ]
+}

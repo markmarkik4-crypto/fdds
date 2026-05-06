@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VidRush — AI Video Generator</title>
+    <meta name="description" content="Create stunning AI-powered videos with subtitles, voiceover, and music in minutes." />
+    <meta property="og:title" content="VidRush — AI Video Generator" />
+    <meta property="og:description" content="Create AI videos from text in minutes" />
+    <meta property="og:type" content="website" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      window.onerror = function(msg, src, line, col, err) {
+        document.body.innerHTML = '<div style="color:red;padding:20px;font-family:monospace;font-size:14px;background:#111;min-height:100vh"><h2>JS ERROR:</h2><pre>' + msg + '\n\n' + (err && err.stack ? err.stack : '') + '</pre></div>';
+      };
+      window.addEventListener('unhandledrejection', function(e) {
+        document.body.innerHTML = '<div style="color:orange;padding:20px;font-family:monospace;font-size:14px;background:#111;min-height:100vh"><h2>PROMISE ERROR:</h2><pre>' + (e.reason && e.reason.stack ? e.reason.stack : String(e.reason)) + '</pre></div>';
+      });
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

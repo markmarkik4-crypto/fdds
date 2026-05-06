@@ -1,0 +1,10 @@
+.git
+.DS_Store
+node_modules
+client/node_modules
+client/dist
+videos
+logs
+.env
+bot.log
+*.log
