@@ -16,7 +16,7 @@ COPY package*.json ./
 RUN npm ci --omit=dev
 
 COPY client/package*.json ./client/
-RUN cd client && npm ci
+RUN cd client && npm ci --legacy-peer-deps
 
 COPY requirements.txt ./
 RUN pip3 install --break-system-packages --no-cache-dir -r requirements.txt
