@@ -12,6 +12,7 @@ dotenv.config();
 const PORT = process.env.PORT || 3000;
 const PROJECT_ROOT = process.env.PROJECT_ROOT || process.cwd();
 const VIDEO_DIR = process.env.VIDEO_DIR || path.join(PROJECT_ROOT, "videos");
+const APP_VERSION = "railway-ffmpeg-optimized-2026-05-08";
 
 let CONFIG = { langs: [], themes: [], styles: [], music: [] };
 try {
@@ -284,6 +285,7 @@ const server = http.createServer(async (req, res) => {
             json(res, 200, {
                 ok: true,
                 service: "vidrush",
+                version: APP_VERSION,
                 timestamp: Date.now(),
                 generation: getGenerationConfigStatus(),
             }); return;
