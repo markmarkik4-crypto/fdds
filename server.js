@@ -184,6 +184,30 @@ function json(res, status, data) {
     res.end(JSON.stringify(data));
 }
 
+function getGenerationConfigStatus() {
+    const hasOpenAI = Boolean(process.env.OPENAI_API_KEY);
+    const imageProviders = [
+        ["GEMINI_API_KEY", process.env.GEMINI_API_KEY],
+        ["TOGETHER_API_KEY", process.env.TOGETHER_API_KEY],
+        ["PEXELS_API_KEY", process.env.PEXELS_API_KEY],
+        ["HF_TOKEN", process.env.HF_TOKEN],
+        ["REPLICATE_API_TOKEN", process.env.REPLICATE_API_TOKEN],
+    ].filter(([, value]) => Boolean(value)).map(([name]) => name);
+
+    const missing = [];
+    if (!hasOpenAI) missing.push("OPENAI_API_KEY");
+    if (!imageProviders.length) missing.push("GEMINI_API_KEY or another image provider key");
+
+    return {
+        ready: missing.length === 0,
+        missing,
+        providers: {
+            scriptAndVoice: hasOpenAI ? "OPENAI_API_KEY" : null,
+            images: imageProviders,
+        },
+    };
+}
+
 // ─── Parse POST body ────────────────────────────────────────────────────────────
 function parseBody(req) {
     return new Promise((resolve) => {
@@ -257,7 +281,12 @@ const server = http.createServer(async (req, res) => {
 
         // GET /api/health
         if (url === "/api/health" && method === "GET") {
-            json(res, 200, { ok: true, service: "vidrush", timestamp: Date.now() }); return;
+            json(res, 200, {
+                ok: true,
+                service: "vidrush",
+                timestamp: Date.now(),
+                generation: getGenerationConfigStatus(),
+            }); return;
         }
 
         // GET /api/jobs
@@ -321,6 +350,14 @@ const server = http.createServer(async (req, res) => {
         // POST /api/generate
         if (url === "/api/generate" && method === "POST") {
             const body = await parseBody(req);
+            const generationConfig = getGenerationConfigStatus();
+            if (!generationConfig.ready) {
+                json(res, 500, {
+                    error: `Generation is not configured. Missing: ${generationConfig.missing.join(", ")}`,
+                    missing: generationConfig.missing,
+                });
+                return;
+            }
             const openAiKey = process.env.OPENAI_API_KEY || "";
             if (!body.theme && !body.customPrompt) { json(res, 400, { error: "Choose topic or enter prompt" }); return; }
 
